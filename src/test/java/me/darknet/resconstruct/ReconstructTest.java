@@ -9,8 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ReconstructTest {
 
@@ -18,17 +17,20 @@ public class ReconstructTest {
 	public void test() {
 		try {
 			Reconstruct re = new Reconstruct();
-			re.add(Objects.requireNonNull(Reconstruct.class.getResourceAsStream("/test.class")));
+			re.add(Objects.requireNonNull(Reconstruct.class.getResourceAsStream("/A.classx")));
 			re.run();
-			Map<String, byte[]> build = re.build();
-			Map<String, ClassNode> builtNodes = build.values().stream()
+			Map<String, ClassNode> builtNodes = re.build().values().stream()
 					.map(ClassReader::new)
 					.collect(Collectors.toMap(ClassReader::getClassName, cr -> {
 						ClassNode node = new ClassNode();
 						cr.accept(node, ClassReader.SKIP_CODE);
 						return node;
 					}));
-			assertEquals(4, build.size());
+			// Should have generated, B, C, D classes
+			assertEquals(3, builtNodes.size());
+			assertNotNull(builtNodes.get("B"), "Missing 'B' phantom");
+			assertNotNull(builtNodes.get("C"), "Missing 'C' phantom");
+			assertNotNull(builtNodes.get("D"), "Missing 'D' phantom");
 		} catch (IOException ex) {
 			fail(ex);
 		}

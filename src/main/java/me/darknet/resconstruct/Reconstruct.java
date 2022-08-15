@@ -18,13 +18,14 @@ import org.objectweb.asm.tree.analysis.AnalyzerException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 public class Reconstruct {
 	private final ClassHierarchy hierarchy = new ClassHierarchy();
-	private final List<byte[]> inputs = new ArrayList<>();
+	private final Map<String, ClassReader> inputs = new HashMap<>();
 	private final InheritanceGraph graph;
 
 	public ClassHierarchy getHierarchy() {
@@ -44,13 +45,13 @@ public class Reconstruct {
 	}
 
 	public void add(byte[] classFile) {
-		inputs.add(classFile);
+		ClassReader cr = new ClassReader(classFile);
+		inputs.put(cr.getClassName(), cr);
 		graph.addClass(classFile);
 	}
 
 	public void run() {
-		for (byte[] classFile : inputs) {
-			ClassReader cr = new ClassReader(classFile);
+		for (ClassReader cr : inputs.values()) {
 			PhantomVisitor visitor = new PhantomVisitor(Opcodes.ASM9, null, this);
 			cr.accept(visitor, 0);
 			ClassNode classNode = new ClassNode();
@@ -62,7 +63,7 @@ public class Reconstruct {
 
 	public Map<String, byte[]> build() {
 		return hierarchy.phantoms.entrySet().stream()
-				.filter(e -> !e.getValue().isCp)
+				.filter(e -> !e.getValue().isCp && !inputs.containsKey(e.getKey().getInternalName()))
 				.collect(Collectors.toMap(
 						e -> e.getKey().getInternalName(),
 						e -> e.getValue().generate(Opcodes.V1_8)
