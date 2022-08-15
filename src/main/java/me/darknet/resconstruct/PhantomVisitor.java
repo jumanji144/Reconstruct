@@ -5,6 +5,9 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
+/**
+ * Generates basic phantom outlines for referenced types from field and invoke instructions.
+ */
 public class PhantomVisitor extends ClassVisitor {
 	private final Reconstruct reconstruct;
 	private final int api;

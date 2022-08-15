@@ -5,13 +5,25 @@ import org.objectweb.asm.Type;
 
 import java.io.IOException;
 
+/**
+ * Various inheritance utils.
+ */
 public class InheritanceUtils {
 	private static final InheritanceGraph GRAPH_CP = new InheritanceGraph();
 
+	/**
+	 * @return Inheritance graph holding information about classpath classes.
+	 */
 	public static InheritanceGraph getClasspathGraph() {
 		return GRAPH_CP;
 	}
 
+	/**
+	 * @param type
+	 * 		Type to check.
+	 *
+	 * @return {@code true} if the given type is loaded in the {@link #getClasspathGraph() current classpath}.
+	 */
 	public static boolean isClasspathType(Type type) {
 		// Not an object? Must be JVM type.
 		if (type.getSort() != Type.OBJECT)
@@ -29,7 +41,7 @@ public class InheritanceUtils {
 		try {
 			GRAPH_CP.addClasspath();
 		} catch (IOException ex) {
-			throw new IllegalStateException("xdark fix this later", ex);
+			throw new IllegalStateException("Failed to generate inheritance graph from classpath", ex);
 		}
 	}
 }

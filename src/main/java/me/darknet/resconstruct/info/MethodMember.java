@@ -1,8 +1,16 @@
 package me.darknet.resconstruct.info;
 
-public class MethodMember extends Member{
+/**
+ * Method information wrapper.
+ */
+public class MethodMember extends AbstractMember {
 	public MethodMember(int access, String name, String desc) {
 		super(access, name, desc);
+	}
+
+	@Override
+	public boolean isField() {
+		return false;
 	}
 
 	@Override

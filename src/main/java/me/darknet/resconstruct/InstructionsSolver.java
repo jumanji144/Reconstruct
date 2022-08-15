@@ -25,6 +25,7 @@ public class InstructionsSolver implements Solver, Opcodes {
 	}
 
 	@Override
+	@SuppressWarnings({"rawtypes", "unchecked"})
 	public void solve(ClassHierarchy classHierarchy, ClassNode classNode) {
 		for (MethodNode method : classNode.methods) {
 			SimAnalyzer analyzer = reconstruct.newAnalyzer();
@@ -40,7 +41,7 @@ public class InstructionsSolver implements Solver, Opcodes {
 					}
 				}
 			} catch (AnalyzerException e) {
-				throw new RuntimeException(e);
+				throw new SolveException(e, "Failed to analyze: " + classNode.name + "." + method.name + method.desc);
 			}
 		}
 	}

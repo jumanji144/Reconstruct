@@ -5,7 +5,10 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ClassHierarchy {
@@ -25,7 +28,8 @@ public class ClassHierarchy {
 		String typeName = type.getInternalName();
 		PhantomClass phantom = new PhantomClass(type);
 		phantom.setSuperType(cr.getSuperName());
-		phantom.getInterfaces().addAll(Arrays.asList(cr.getInterfaces()));
+		for (String itf : cr.getInterfaces())
+			phantom.addInterface(itf);
 		phantom.setAccess(cr.getAccess());
 		phantoms.put(typeName, phantom);
 		inputPhantoms.add(typeName);
