@@ -7,19 +7,15 @@ import me.coley.analysis.TypeResolver;
 import me.coley.analysis.exception.ResolvableExceptionFactory;
 import me.coley.analysis.util.InheritanceGraph;
 import me.coley.analysis.util.TypeUtil;
-import me.coley.analysis.value.AbstractValue;
+import me.darknet.resconstruct.util.InheritanceUtils;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.analysis.AnalyzerException;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 

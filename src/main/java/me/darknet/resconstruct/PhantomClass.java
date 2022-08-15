@@ -1,5 +1,7 @@
 package me.darknet.resconstruct;
 
+import me.darknet.resconstruct.info.FieldMember;
+import me.darknet.resconstruct.info.MethodMember;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -11,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 
 public class PhantomClass {
-
 	public Type type;
 	public int access;
 	public boolean isCp;
@@ -50,7 +51,8 @@ public class PhantomClass {
 	public void addMethodUsage(int opcode, String name, String descriptor) {
 		String key = name + descriptor;
 		if (!methods.containsKey(key)) {
-			MethodMember method = new MethodMember(Opcodes.ACC_PUBLIC, name, descriptor);
+			int mods = Opcodes.ACC_PUBLIC;
+			MethodMember method = new MethodMember(mods, name, descriptor);
 			methods.put(key, method);
 		}
 	}

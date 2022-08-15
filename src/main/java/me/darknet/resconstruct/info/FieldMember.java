@@ -1,4 +1,4 @@
-package me.darknet.resconstruct;
+package me.darknet.resconstruct.info;
 
 public class FieldMember extends Member {
 	public FieldMember(int access, String name, String desc) {

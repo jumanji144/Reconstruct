@@ -1,4 +1,4 @@
-package me.darknet.resconstruct;
+package me.darknet.resconstruct.info;
 
 import java.util.Objects;
 

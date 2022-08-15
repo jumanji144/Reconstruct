@@ -1,4 +1,4 @@
-package me.darknet.resconstruct;
+package me.darknet.resconstruct.util;
 
 import me.coley.analysis.util.InheritanceGraph;
 import org.objectweb.asm.Type;

@@ -1,5 +1,6 @@
 package me.darknet.resconstruct;
 
+import me.darknet.resconstruct.util.InheritanceUtils;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 

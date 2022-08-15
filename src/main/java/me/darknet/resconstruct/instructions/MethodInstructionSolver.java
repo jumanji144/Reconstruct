@@ -2,9 +2,9 @@ package me.darknet.resconstruct.instructions;
 
 import me.coley.analysis.value.AbstractValue;
 import me.darknet.resconstruct.ClassHierarchy;
-import me.darknet.resconstruct.MethodMember;
+import me.darknet.resconstruct.info.MethodMember;
 import me.darknet.resconstruct.PhantomClass;
-import me.darknet.resconstruct.Poggers;
+import me.darknet.resconstruct.util.TypeUtils;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.analysis.Frame;
@@ -26,7 +26,7 @@ public class MethodInstructionSolver implements InstructionSolver<MethodInsnNode
 	}
 
 	private void inferOwnerType(MethodInsnNode instruction, Frame<AbstractValue> frame, ClassHierarchy hierarchy) {
-		int arguments = Poggers.getArgumentsSize(instruction.desc) + 1;
+		int arguments = TypeUtils.getArgumentsSize(instruction.desc) + 1;
 		AbstractValue ownerValue = frame.getStack(frame.getStackSize() - arguments);
 		Type ownerType = Type.getObjectType(instruction.owner);
 		Type wtf = ownerValue.getType();
