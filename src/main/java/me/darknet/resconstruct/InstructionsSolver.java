@@ -3,7 +3,7 @@ package me.darknet.resconstruct;
 import me.coley.analysis.SimAnalyzer;
 import me.coley.analysis.value.AbstractValue;
 import me.darknet.resconstruct.instructions.InstructionSolver;
-import me.darknet.resconstruct.instructions.MethodInstruction;
+import me.darknet.resconstruct.instructions.MethodInstructionSolver;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
 import org.objectweb.asm.tree.analysis.AnalyzerException;
@@ -17,7 +17,7 @@ public class InstructionsSolver implements Solver, Opcodes {
 	private final Reconstruct reconstruct;
 
 	static {
-		instructionSolvers.put(MethodInsnNode.class, new MethodInstruction());
+		instructionSolvers.put(MethodInsnNode.class, new MethodInstructionSolver());
 	}
 
 	public InstructionsSolver(Reconstruct reconstruct) {
@@ -26,8 +26,8 @@ public class InstructionsSolver implements Solver, Opcodes {
 
 	@Override
 	public void solve(ClassHierarchy classHierarchy, ClassNode classNode) {
-		SimAnalyzer analyzer = reconstruct.getAnalyzer();
 		for (MethodNode method : classNode.methods) {
+			SimAnalyzer analyzer = reconstruct.newAnalyzer();
 			try {
 				InsnList instructions = method.instructions;
 				Frame<AbstractValue>[] frames = analyzer.analyze(classNode.name, method);

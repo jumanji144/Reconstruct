@@ -4,7 +4,6 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.objectweb.asm.commons.InstructionAdapter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,6 +14,7 @@ public class PhantomClass {
 
 	public Type type;
 	public int access;
+	public boolean isCp;
 	public Map<String, MethodMember> methods = new HashMap<>();
 	public Map<String, FieldMember> fields = new HashMap<>();
 	public String superType;
@@ -26,7 +26,7 @@ public class PhantomClass {
 		ClassWriter cw = new ClassWriter(0);
 		cw.visit(version, access, type.getInternalName(), null, superType, interfaces.toArray(new String[]{}));
 
-		for(MethodMember method : methods.values()) {
+		for (MethodMember method : methods.values()) {
 			MethodVisitor mv = cw.visitMethod(method.access, method.name, method.desc, null, null);
 			mv.visitCode();
 			mv.visitTypeInsn(Opcodes.NEW, "java/lang/RuntimeException");
@@ -38,7 +38,7 @@ public class PhantomClass {
 			mv.visitEnd();
 		}
 
-		for(FieldMember field : fields.values()) {
+		for (FieldMember field : fields.values()) {
 			cw.visitField(field.access, field.name, field.desc, null, null);
 		}
 
@@ -47,4 +47,11 @@ public class PhantomClass {
 		return cw.toByteArray();
 	}
 
+	public void addMethodUsage(int opcode, String name, String descriptor) {
+		String key = name + descriptor;
+		if (!methods.containsKey(key)) {
+			MethodMember method = new MethodMember(Opcodes.ACC_PUBLIC, name, descriptor);
+			methods.put(key, method);
+		}
+	}
 }

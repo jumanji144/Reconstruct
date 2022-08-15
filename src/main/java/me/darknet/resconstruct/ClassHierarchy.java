@@ -9,24 +9,18 @@ import java.util.Map;
 public class ClassHierarchy {
 	Map<Type, PhantomClass> phantoms = new HashMap<>();
 
-	public void addPhantom(PhantomClass phantomClass) {
-		phantoms.put(phantomClass.type, phantomClass);
-	}
-
 	public boolean contains(Type type) {
 		return phantoms.containsKey(type);
 	}
 
-	public PhantomClass get(Type type) {
-		if(phantoms.containsKey(type)) {
-			return phantoms.get(type);
-		} else {
-			// create new class based off of type
+	public PhantomClass getOrCreate(Type type) {
+		return phantoms.computeIfAbsent(type, t -> {
 			PhantomClass phantomClass = new PhantomClass();
-			phantomClass.type = type;
+			phantomClass.isCp = InheritanceUtils.isClasspathType(t);
+			phantomClass.type = t;
 			phantomClass.access = Opcodes.ACC_PUBLIC;
-		}
-		return phantoms.get(type);
+			return phantomClass;
+		});
 	}
 
 	@Override
