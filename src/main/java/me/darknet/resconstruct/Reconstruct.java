@@ -36,10 +36,6 @@ public class Reconstruct {
 		graph = InheritanceUtils.getClasspathGraph().copy();
 	}
 
-	public void add(InputStream classFileStream) throws IOException {
-		add(classFileStream.readAllBytes());
-	}
-
 	public void add(byte[] classFile) {
 		ClassReader cr = new ClassReader(classFile);
 		inputs.put(cr.getClassName(), cr);

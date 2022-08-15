@@ -17,7 +17,7 @@ public class ReconstructTest {
 	public void test() {
 		try {
 			Reconstruct re = new Reconstruct();
-			re.add(Objects.requireNonNull(Reconstruct.class.getResourceAsStream("/A.classx")));
+			re.add(Objects.requireNonNull(Reconstruct.class.getResourceAsStream("/A.classx")).readAllBytes());
 			re.run();
 			Map<String, ClassNode> builtNodes = re.build().values().stream()
 					.map(ClassReader::new)

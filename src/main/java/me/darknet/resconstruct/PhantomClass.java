@@ -2,6 +2,7 @@ package me.darknet.resconstruct;
 
 import me.darknet.resconstruct.info.FieldMember;
 import me.darknet.resconstruct.info.MethodMember;
+import me.darknet.resconstruct.util.AccessUtils;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -23,7 +24,6 @@ public class PhantomClass {
 	public List<Type> inheritors = new ArrayList<>();
 
 	public byte[] generate(int version) {
-
 		ClassWriter cw = new ClassWriter(0);
 		cw.visit(version, access, type.getInternalName(), null, superType, interfaces.toArray(new String[]{}));
 
@@ -35,7 +35,7 @@ public class PhantomClass {
 			mv.visitLdcInsn("stub");
 			mv.visitMethodInsn(Opcodes.INVOKESPECIAL, "java/lang/RuntimeException", "<init>", "(Ljava/lang/String;)V", false);
 			mv.visitInsn(Opcodes.ATHROW);
-			mv.visitMaxs(1, 1);
+			mv.visitMaxs(1, AccessUtils.isStatic(method.access) ? 0 : 1);
 			mv.visitEnd();
 		}
 
@@ -52,6 +52,9 @@ public class PhantomClass {
 		String key = name + descriptor;
 		if (!methods.containsKey(key)) {
 			int mods = Opcodes.ACC_PUBLIC;
+			if (opcode == Opcodes.INVOKESTATIC) {
+				mods |= Opcodes.ACC_STATIC;
+			}
 			MethodMember method = new MethodMember(mods, name, descriptor);
 			methods.put(key, method);
 		}
