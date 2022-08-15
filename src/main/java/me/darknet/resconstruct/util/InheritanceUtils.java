@@ -32,14 +32,16 @@ public class InheritanceUtils {
 		String internalName = type.getInternalName();
 		if (internalName.equals("java/lang/Object"))
 			return true;
-		// Any non-object type will have at least Object as a parent.
-		// If there is no record of it in the graph, then it will return an empty set.
-		return !GRAPH_CP.getParents(internalName).isEmpty();
+		// If the graph has lookups for the type, it belongs to the classpath
+		return GRAPH_CP.hasChildrenLookup(internalName) || GRAPH_CP.hasParentLookup(internalName);
 	}
 
 	static {
 		try {
+			// Handle the standard classpath
 			GRAPH_CP.addClasspath();
+			// Handles the module path for Java 9+
+			GRAPH_CP.addModulePath();
 		} catch (IOException ex) {
 			throw new IllegalStateException("Failed to generate inheritance graph from classpath", ex);
 		}
