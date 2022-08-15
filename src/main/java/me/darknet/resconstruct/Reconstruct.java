@@ -43,9 +43,11 @@ public class Reconstruct {
 	}
 
 	public void run() {
+		// Initial pass to generate base phantom types
+		for (ClassReader cr : inputs.values())
+			cr.accept(new PhantomVisitor(Opcodes.ASM9, null, this), ClassReader.SKIP_FRAMES);
+		// Second pass to flesh out phantom types
 		for (ClassReader cr : inputs.values()) {
-			PhantomVisitor visitor = new PhantomVisitor(Opcodes.ASM9, null, this);
-			cr.accept(visitor, 0);
 			ClassNode classNode = new ClassNode();
 			cr.accept(classNode, 0);
 			InstructionsSolver solver = new InstructionsSolver(this);
