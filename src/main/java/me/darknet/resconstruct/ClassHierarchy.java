@@ -30,7 +30,6 @@ public class ClassHierarchy {
 		phantom.setSuperType(cr.getSuperName());
 		for (String itf : cr.getInterfaces())
 			phantom.addInterface(itf);
-		phantom.setAccess(cr.getAccess());
 		phantoms.put(typeName, phantom);
 		inputPhantoms.add(typeName);
 	}
@@ -38,14 +37,12 @@ public class ClassHierarchy {
 	public PhantomClass getOrCreate(Type type) {
 		return phantoms.computeIfAbsent(type.getInternalName(), t -> {
 			boolean isCp = InheritanceUtils.isClasspathType(type);
-			PhantomClass phantom = new PhantomClass(type) {
+			return new PhantomClass(type) {
 				@Override
 				public boolean isCp() {
 					return isCp;
 				}
 			};
-			phantom.setAccess(Opcodes.ACC_PUBLIC);
-			return phantom;
 		});
 	}
 
@@ -72,7 +69,19 @@ public class ClassHierarchy {
 		phantoms.forEach((typeName, phantomClass) -> {
 			if (phantomClass.isCp() || inputPhantoms.contains(typeName))
 				return;
-			sb.append("Class ").append(typeName.replace('/', '.')).append(":\n");
+			if (phantomClass.isInterface()) {
+				sb.append("Interface ");
+			} else {
+				sb.append("Class ");
+			}
+			sb.append(typeName.replace('/', '.'));
+			if (!phantomClass.getSuperType().equals("java/lang/Object"))
+				sb.append(" extends ").append(phantomClass.getSuperType());
+			if (!phantomClass.getInheritors().isEmpty()) {
+				sb.append(" inherits ").append(phantomClass.getInheritors().stream()
+						.map(Type::getInternalName).collect(Collectors.joining(", ")));
+			}
+			sb.append(":\n");
 			phantomClass.getMethods().forEach((name, method) -> {
 				sb.append("\t- ");
 				sb.append(method.name).append(method.desc).append("\n");

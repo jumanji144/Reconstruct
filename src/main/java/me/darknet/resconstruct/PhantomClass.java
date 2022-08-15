@@ -1,5 +1,6 @@
 package me.darknet.resconstruct;
 
+import me.coley.analysis.util.TypeUtil;
 import me.darknet.resconstruct.info.FieldMember;
 import me.darknet.resconstruct.info.MethodMember;
 import me.darknet.resconstruct.util.AccessUtils;
@@ -13,14 +14,14 @@ import java.util.*;
 public class PhantomClass {
 	private final Map<String, MethodMember> methods = new HashMap<>();
 	private final Map<String, FieldMember> fields = new HashMap<>();
-	private final List<String> interfaces = new ArrayList<>();
-	private final List<Type> inheritors = new ArrayList<>();
+	private final Set<String> interfaces = new HashSet<>();
+	private final Set<Type> inheritors = new HashSet<>();
 	private final Type type;
-	private String superType;
-	private int access;
+	private String superType = "java/lang/Object";
 
 	/**
-	 * @param type The phantom wrapped type.
+	 * @param type
+	 * 		The phantom wrapped type.
 	 */
 	public PhantomClass(Type type) {
 		this.type = type;
@@ -34,6 +35,9 @@ public class PhantomClass {
 				mods |= Opcodes.ACC_STATIC;
 			}
 			MethodMember method = new MethodMember(mods, name, descriptor);
+			if (opcode == Opcodes.INVOKEINTERFACE) {
+				method.setInterface();
+			}
 			methods.put(key, method);
 		}
 	}
@@ -51,6 +55,14 @@ public class PhantomClass {
 	}
 
 	public byte[] generate(int version) {
+		int access = Opcodes.ACC_PUBLIC;
+		if (isInterface()) {
+			access |= Opcodes.ACC_INTERFACE;
+			if (!"java/lang/Object".equals(superType)) {
+				throw new GenerateException("Class cannot be an interface and have super-type that is not Object!");
+			}
+		}
+
 		ClassWriter cw = new ClassWriter(0);
 		cw.visit(version, access, type.getInternalName(), null, superType, interfaces.toArray(new String[]{}));
 
@@ -74,6 +86,11 @@ public class PhantomClass {
 		return cw.toByteArray();
 	}
 
+	public boolean isInterface() {
+		return methods.values().stream()
+				.anyMatch(MethodMember::isInterface);
+	}
+
 	public Map<String, MethodMember> getMethods() {
 		return Collections.unmodifiableMap(methods);
 	}
@@ -82,7 +99,7 @@ public class PhantomClass {
 		return Collections.unmodifiableMap(fields);
 	}
 
-	public List<String> getInterfaces() {
+	public Set<String> getInterfaces() {
 		return interfaces;
 	}
 
@@ -90,11 +107,13 @@ public class PhantomClass {
 		interfaces.add(itf);
 	}
 
-	public List<Type> getInheritors() {
+	public Set<Type> getInheritors() {
 		return inheritors;
 	}
 
 	public void addInheritor(Type type) {
+		if (TypeUtil.OBJECT_TYPE.equals(type))
+			return;
 		inheritors.add(type);
 	}
 
@@ -112,14 +131,6 @@ public class PhantomClass {
 
 	public void setSuperType(String superType) {
 		this.superType = superType;
-	}
-
-	public int getAccess() {
-		return access;
-	}
-
-	public void setAccess(int access) {
-		this.access = access;
 	}
 
 	public boolean isCp() {
