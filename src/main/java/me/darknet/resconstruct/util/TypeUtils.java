@@ -6,6 +6,8 @@ import org.objectweb.asm.Type;
  * Various type utils.
  */
 public class TypeUtils {
+	public static final Type ANNO_TYPE = Type.getObjectType("java/lang/annotation/Annotation");
+
 	/**
 	 * @param desc
 	 * 		Method descriptor.

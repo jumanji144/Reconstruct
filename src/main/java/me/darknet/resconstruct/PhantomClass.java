@@ -4,6 +4,7 @@ import me.coley.analysis.util.TypeUtil;
 import me.darknet.resconstruct.info.FieldMember;
 import me.darknet.resconstruct.info.MethodMember;
 import me.darknet.resconstruct.util.AccessUtils;
+import me.darknet.resconstruct.util.TypeUtils;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -56,8 +57,10 @@ public class PhantomClass {
 
 	public byte[] generate(int version) {
 		int access = Opcodes.ACC_PUBLIC;
-		if (isInterface()) {
-			access |= Opcodes.ACC_INTERFACE;
+		if (isAnnotation()) {
+			access |= Opcodes.ACC_ANNOTATION | Opcodes.ACC_ABSTRACT | Opcodes.ACC_INTERFACE;
+		} else if (isInterface()) {
+			access |= Opcodes.ACC_INTERFACE | Opcodes.ACC_ABSTRACT;
 			if (!"java/lang/Object".equals(superType)) {
 				throw new GenerateException("Class cannot be an interface and have super-type that is not Object!");
 			}
@@ -87,8 +90,12 @@ public class PhantomClass {
 	}
 
 	public boolean isInterface() {
-		return methods.values().stream()
+		return isAnnotation() || methods.values().stream()
 				.anyMatch(MethodMember::isInterface);
+	}
+
+	public boolean isAnnotation() {
+		return superType.equals(TypeUtils.ANNO_TYPE.getInternalName());
 	}
 
 	public Map<String, MethodMember> getMethods() {
@@ -135,5 +142,10 @@ public class PhantomClass {
 
 	public boolean isCp() {
 		return false;
+	}
+
+	@Override
+	public String toString() {
+		return type.getInternalName();
 	}
 }
