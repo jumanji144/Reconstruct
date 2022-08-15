@@ -44,7 +44,6 @@ public class PhantomClass {
 		}
 
 		cw.visitEnd();
-
 		return cw.toByteArray();
 	}
 
@@ -57,6 +56,18 @@ public class PhantomClass {
 			}
 			MethodMember method = new MethodMember(mods, name, descriptor);
 			methods.put(key, method);
+		}
+	}
+
+	public void addFieldUsage(int opcode, String name, String descriptor) {
+		String key = name + "." + descriptor;
+		if (!fields.containsKey(key)) {
+			int mods = Opcodes.ACC_PUBLIC;
+			if (opcode == Opcodes.GETSTATIC || opcode == Opcodes.PUTSTATIC) {
+				mods |= Opcodes.ACC_STATIC;
+			}
+			FieldMember field = new FieldMember(mods, name, descriptor);
+			fields.put(key, field);
 		}
 	}
 }

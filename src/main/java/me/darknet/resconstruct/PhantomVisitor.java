@@ -36,5 +36,17 @@ public class PhantomVisitor extends ClassVisitor {
 			// Continue visitor chain
 			super.visitMethodInsn(opcode, owner, name, descriptor, itf);
 		}
+
+		@Override
+		public void visitFieldInsn(int opcode, String owner, String name, String descriptor) {
+			ClassHierarchy hierarchy = reconstruct.getHierarchy();
+			Type type = Type.getObjectType(owner);
+			// Get/create phantom
+			PhantomClass phantomClass = hierarchy.getOrCreate(type);
+			// Add field to phantom
+			phantomClass.addFieldUsage(opcode, name, descriptor);
+			// Continue visitor chain
+			super.visitFieldInsn(opcode, owner, name, descriptor);
+		}
 	}
 }
