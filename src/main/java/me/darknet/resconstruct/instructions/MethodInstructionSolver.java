@@ -36,12 +36,12 @@ public class MethodInstructionSolver implements InstructionSolver<MethodInsnNode
 		PhantomClass phantomStack = hierarchy.getOrCreate(wtf);
 		if (phantomActual != null) {
 			// Method call -> method must exist
-			phantomActual.methods.put(instruction.name, new MethodMember(ACC_PUBLIC, instruction.name, instruction.desc));
+			phantomActual.addMethodUsage(instruction.getOpcode(), instruction.name, instruction.desc);
 		}
-		if (ownerType.equals(phantomStack.type)) {
+		if (ownerType.equals(phantomStack.getType())) {
 			// If the stack type is not the same as the owner type that means that stack type inherits the owner type.
 			// Though at this point we do not know if this is directly or not.
-			phantomStack.inheritors.add(ownerType);
+			phantomStack.addInheritor(ownerType);
 		}
 	}
 }

@@ -19,6 +19,7 @@ public class ReconstructTest {
 			Reconstruct re = new Reconstruct();
 			re.add(Objects.requireNonNull(Reconstruct.class.getResourceAsStream("/A.classx")).readAllBytes());
 			re.run();
+			System.out.println(re.getHierarchy());
 			Map<String, ClassNode> builtNodes = re.build().values().stream()
 					.map(ClassReader::new)
 					.collect(Collectors.toMap(ClassReader::getClassName, cr -> {

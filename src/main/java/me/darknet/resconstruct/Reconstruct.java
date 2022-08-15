@@ -4,7 +4,6 @@ import me.coley.analysis.SimAnalyzer;
 import me.coley.analysis.SimInterpreter;
 import me.coley.analysis.TypeChecker;
 import me.coley.analysis.TypeResolver;
-import me.coley.analysis.exception.ResolvableExceptionFactory;
 import me.coley.analysis.util.InheritanceGraph;
 import me.coley.analysis.util.TypeUtil;
 import me.darknet.resconstruct.util.InheritanceUtils;
@@ -13,16 +12,13 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.ClassNode;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class Reconstruct {
 	private final ClassHierarchy hierarchy = new ClassHierarchy();
 	private final Map<String, ClassReader> inputs = new HashMap<>();
-	private final InheritanceGraph graph;
+	private InheritanceGraph graph;
 
 	public ClassHierarchy getHierarchy() {
 		return hierarchy;
@@ -33,13 +29,19 @@ public class Reconstruct {
 	}
 
 	public Reconstruct() {
-		graph = InheritanceUtils.getClasspathGraph().copy();
+		reset();
 	}
+
 
 	public void add(byte[] classFile) {
 		ClassReader cr = new ClassReader(classFile);
 		inputs.put(cr.getClassName(), cr);
+		hierarchy.createInputPhantom(cr);
 		graph.addClass(classFile);
+	}
+
+	public void reset() {
+		graph = InheritanceUtils.getClasspathGraph().copy();
 	}
 
 	public void run() {
@@ -56,23 +58,12 @@ public class Reconstruct {
 	}
 
 	public Map<String, byte[]> build() {
-		return hierarchy.phantoms.entrySet().stream()
-				.filter(e -> !e.getValue().isCp && !inputs.containsKey(e.getKey().getInternalName()))
-				.collect(Collectors.toMap(
-						e -> e.getKey().getInternalName(),
-						e -> e.getValue().generate(Opcodes.V1_8)
-				));
+		return hierarchy.export();
 	}
 
 	public SimAnalyzer newAnalyzer() {
 		SimInterpreter interpreter = new SimInterpreter();
 		SimAnalyzer analyzer = new SimAnalyzer(interpreter) {
-			@Override
-			protected ResolvableExceptionFactory createExceptionFactory() {
-				// TODO: Do we need this, or can we use the silent option?
-				return super.createExceptionFactory();
-			}
-
 			@Override
 			public TypeChecker createTypeChecker() {
 				return (parent, child) -> graph.getAllParents(child.getInternalName())

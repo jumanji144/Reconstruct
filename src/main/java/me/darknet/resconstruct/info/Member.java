@@ -2,7 +2,7 @@ package me.darknet.resconstruct.info;
 
 import java.util.Objects;
 
-public class Member {
+public abstract class Member {
 	public final int access;
 	public final String name;
 	public final String desc;

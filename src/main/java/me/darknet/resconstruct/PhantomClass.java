@@ -14,14 +14,65 @@ import java.util.List;
 import java.util.Map;
 
 public class PhantomClass {
-	public Type type;
-	public int access;
-	public boolean isCp;
-	public Map<String, MethodMember> methods = new HashMap<>();
-	public Map<String, FieldMember> fields = new HashMap<>();
-	public String superType;
-	public List<String> interfaces = new ArrayList<>();
-	public List<Type> inheritors = new ArrayList<>();
+	private final Map<String, MethodMember> methods = new HashMap<>();
+	private final Map<String, FieldMember> fields = new HashMap<>();
+	private final List<String> interfaces = new ArrayList<>();
+	private final List<Type> inheritors = new ArrayList<>();
+	private final Type type;
+	private String superType;
+	private int access;
+
+	public PhantomClass(Type type) {
+		this.type = type;
+	}
+
+	public Map<String, MethodMember> getMethods() {
+		return methods;
+	}
+
+	public Map<String, FieldMember> getFields() {
+		return fields;
+	}
+
+	public List<String> getInterfaces() {
+		return interfaces;
+	}
+
+	public List<Type> getInheritors() {
+		return inheritors;
+	}
+
+	public void addInheritor(Type type) {
+		inheritors.add(type);
+	}
+
+	public Type getType() {
+		return type;
+	}
+
+	public String getTypeName() {
+		return type.getInternalName();
+	}
+
+	public String getSuperType() {
+		return superType;
+	}
+
+	public void setSuperType(String superType) {
+		this.superType = superType;
+	}
+
+	public int getAccess() {
+		return access;
+	}
+
+	public void setAccess(int access) {
+		this.access = access;
+	}
+
+	public boolean isCp() {
+		return false;
+	}
 
 	public byte[] generate(int version) {
 		ClassWriter cw = new ClassWriter(0);
