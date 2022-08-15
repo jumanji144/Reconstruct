@@ -1,40 +1,88 @@
 package me.darknet.resconstruct;
 
+import me.darknet.resconstruct.util.InheritanceUtils;
+import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ClassHierarchy {
-	Map<Type, PhantomClass> phantoms = new HashMap<>();
-
-	public void addPhantom(PhantomClass phantomClass) {
-		phantoms.put(phantomClass.type, phantomClass);
-	}
+	private final Map<String, PhantomClass> phantoms = new HashMap<>();
+	private final Set<String> inputPhantoms = new HashSet<>();
 
 	public boolean contains(Type type) {
+		return contains(type.getInternalName());
+	}
+
+	public boolean contains(String type) {
 		return phantoms.containsKey(type);
 	}
 
-	public PhantomClass get(Type type) {
-		if(phantoms.containsKey(type)) {
-			return phantoms.get(type);
-		} else {
-			// create new class based off of type
-			PhantomClass phantomClass = new PhantomClass();
-			phantomClass.type = type;
-			phantomClass.access = Opcodes.ACC_PUBLIC;
-		}
-		return phantoms.get(type);
+	public void createInputPhantom(ClassReader cr) {
+		Type type = Type.getObjectType(cr.getClassName());
+		String typeName = type.getInternalName();
+		PhantomClass phantom = new PhantomClass(type);
+		phantom.setSuperType(cr.getSuperName());
+		for (String itf : cr.getInterfaces())
+			phantom.addInterface(itf);
+		phantoms.put(typeName, phantom);
+		inputPhantoms.add(typeName);
+	}
+
+	public PhantomClass getOrCreate(Type type) {
+		return phantoms.computeIfAbsent(type.getInternalName(), t -> {
+			boolean isCp = InheritanceUtils.isClasspathType(type);
+			return new PhantomClass(type) {
+				@Override
+				public boolean isCp() {
+					return isCp;
+				}
+			};
+		});
+	}
+
+	public boolean isPhantomOnClasspath(PhantomClass phantom) {
+		return phantom.isCp();
+	}
+
+	public boolean isPhantomFromInput(PhantomClass phantom) {
+		return inputPhantoms.contains(phantom.getTypeName());
+	}
+
+	public Map<String, byte[]> export() {
+		return phantoms.entrySet().stream()
+				.filter(e -> !isPhantomOnClasspath(e.getValue()) && !isPhantomFromInput(e.getValue()))
+				.collect(Collectors.toMap(
+						Map.Entry::getKey,
+						e -> e.getValue().generate(Opcodes.V1_8)
+				));
 	}
 
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		phantoms.forEach((type, phantomClass) -> {
-			sb.append("Class ").append(type.getClassName()).append(":\n");
-			phantomClass.methods.forEach((name, method) -> {
+		phantoms.forEach((typeName, phantomClass) -> {
+			if (phantomClass.isCp() || inputPhantoms.contains(typeName))
+				return;
+			if (phantomClass.isInterface()) {
+				sb.append("Interface ");
+			} else {
+				sb.append("Class ");
+			}
+			sb.append(typeName.replace('/', '.'));
+			if (!phantomClass.getSuperType().equals("java/lang/Object"))
+				sb.append(" extends ").append(phantomClass.getSuperType());
+			if (!phantomClass.getInheritors().isEmpty()) {
+				sb.append(" inherits ").append(phantomClass.getInheritors().stream()
+						.map(Type::getInternalName).collect(Collectors.joining(", ")));
+			}
+			sb.append(":\n");
+			phantomClass.getMethods().forEach((name, method) -> {
 				sb.append("\t- ");
 				sb.append(method.name).append(method.desc).append("\n");
 			});
