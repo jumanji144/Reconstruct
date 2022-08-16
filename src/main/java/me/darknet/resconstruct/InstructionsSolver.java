@@ -1,6 +1,7 @@
 package me.darknet.resconstruct;
 
 import me.coley.analysis.SimAnalyzer;
+import me.coley.analysis.SimFrame;
 import me.coley.analysis.value.AbstractValue;
 import me.darknet.resconstruct.instructions.InstructionSolver;
 import me.darknet.resconstruct.instructions.MethodInstructionSolver;
@@ -31,10 +32,10 @@ public class InstructionsSolver implements Solver, Opcodes {
 			SimAnalyzer analyzer = reconstruct.newAnalyzer();
 			try {
 				InsnList instructions = method.instructions;
-				Frame<AbstractValue>[] frames = analyzer.analyze(classNode.name, method);
+				SimFrame[] frames = analyzer.analyze(classNode.name, method);
 				for (int i = 0; i < instructions.size(); i++) {
 					AbstractInsnNode instruction = instructions.get(i);
-					Frame<AbstractValue> frame = frames[i];
+					SimFrame frame = frames[i];
 					InstructionSolver solver = instructionSolvers.get(instruction.getClass());
 					if (solver != null) {
 						solver.solve(instruction, frame, classHierarchy);

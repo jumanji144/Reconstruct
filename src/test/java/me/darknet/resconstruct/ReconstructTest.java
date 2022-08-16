@@ -1,5 +1,6 @@
 package me.darknet.resconstruct;
 
+import me.darknet.resconstruct.util.AccessUtils;
 import org.junit.jupiter.api.Test;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.tree.ClassNode;
@@ -18,8 +19,17 @@ public class ReconstructTest {
 	@Test
 	public void testSimulation() throws IOException {
 		test("/simulation/Application.classx", (reconstruct, builtNodes) -> {
-			// TODO: assertions for number of classes
-			// TODO: assertions for some types being interfaces instead of classes
+			// Should have generated: Cat, Person, Creature, Living, Named, World
+			assertEquals(6, builtNodes.size());
+			// No reason to suggest class, can use interface
+			//  - World isn't written as one, but from 'Application' alone that cannot be determined.
+			assertTrue(AccessUtils.isInterface(builtNodes.get("simulation/Living").access));
+			assertTrue(AccessUtils.isInterface(builtNodes.get("simulation/Named").access));
+			assertTrue(AccessUtils.isInterface(builtNodes.get("simulation/World").access));
+			// Constructors called, must be classes
+			assertFalse(AccessUtils.isInterface(builtNodes.get("simulation/Cat").access));
+			assertFalse(AccessUtils.isInterface(builtNodes.get("simulation/Person").access));
+			assertFalse(AccessUtils.isInterface(builtNodes.get("simulation/Creature").access));
 			// TODO: assertions for model inheritance order
 		});
 	}
@@ -27,7 +37,7 @@ public class ReconstructTest {
 	@Test
 	public void testSimple() {
 		test("/simple/A.classx", (reconstruct, builtNodes) -> {
-			// Should have generated, B, C, D classes
+			// Should have generated: B, C, D classes
 			assertEquals(3, builtNodes.size());
 			assertNotNull(builtNodes.get("B"), "Missing 'B' phantom");
 			assertNotNull(builtNodes.get("C"), "Missing 'C' phantom");
