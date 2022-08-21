@@ -16,7 +16,8 @@ public class PhantomClass {
 	private final Map<String, MethodMember> methods = new HashMap<>();
 	private final Map<String, FieldMember> fields = new HashMap<>();
 	private final Set<String> interfaces = new HashSet<>();
-	private final Set<Type> inheritors = new HashSet<>();
+	private final Set<Type> implementCandidates = new HashSet<>();
+	private final Set<Type> childCandidates = new HashSet<>();
 	private final Type type;
 	private String superType = "java/lang/Object";
 
@@ -114,14 +115,20 @@ public class PhantomClass {
 		interfaces.add(itf);
 	}
 
-	public Set<Type> getInheritors() {
-		return inheritors;
+	public Set<Type> getImplementCandidates() {
+		return implementCandidates;
 	}
 
-	public void addInheritor(Type type) {
-		if (TypeUtil.OBJECT_TYPE.equals(type))
+	public Set<Type> getChildCandidates() {
+		return childCandidates;
+	}
+
+	public void addImplementCandidate(PhantomClass other) {
+		Type otherType = other.getType();
+		if (TypeUtil.OBJECT_TYPE.equals(otherType) || getType().equals(otherType))
 			return;
-		inheritors.add(type);
+		implementCandidates.add(otherType);
+		other.childCandidates.add(getType());
 	}
 
 	public Type getType() {

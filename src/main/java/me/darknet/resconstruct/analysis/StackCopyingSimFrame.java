@@ -110,7 +110,7 @@ public class StackCopyingSimFrame extends SimFrame {
 					// If it is the same as the current type, we do not need to do anything.
 					Type targetType = TypeUtils.computeBestType(currentType, frameType, typeResolver);
 					if (targetType.equals(currentType))
-						return;
+						continue;
 					// Create a copy value but with the new type.
 					VirtualValue newValue =
 							VirtualValue.ofVirtual(virtual.getInsns(), typeChecker, targetType, virtual.getValue());
@@ -141,7 +141,7 @@ public class StackCopyingSimFrame extends SimFrame {
 				// If it is the same as the current type, we do not need to do anything.
 				Type targetType = TypeUtils.computeBestType(currentType, frameType, typeResolver);
 				if (targetType.equals(currentType))
-					return;
+					continue;
 				// Create a copy value but with the new type.
 				VirtualValue newValue =
 						VirtualValue.ofVirtual(virtual.getInsns(), typeChecker, targetType, virtual.getValue());
