@@ -16,13 +16,14 @@ configurations {
 
 dependencies {
     def asm = '9.3'
+    def sim = '1.8.1'
     // objectweb asm
     compileOnly "org.ow2.asm:asm:${asm}"
     compileOnly "org.ow2.asm:asm-commons:${asm}"
     compileOnly "org.ow2.asm:asm-tree:${asm}"
     compileOnly "org.ow2.asm:asm-analysis:${asm}"
     compileOnly "org.ow2.asm:asm-util:${asm}"
-    compileOnly "com.github.Col-E:SimAnalyzer:1.8.1"
+    compileOnly "com.github.Col-E:SimAnalyzer:${sim}"
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.8.2"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.8.2"

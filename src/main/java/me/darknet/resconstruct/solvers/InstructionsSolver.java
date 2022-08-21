@@ -1,17 +1,21 @@
-package me.darknet.resconstruct;
+package me.darknet.resconstruct.solvers;
 
 import me.coley.analysis.SimAnalyzer;
 import me.coley.analysis.SimFrame;
 import me.coley.analysis.value.AbstractValue;
+import me.darknet.resconstruct.ClassHierarchy;
+import me.darknet.resconstruct.Reconstruct;
+import me.darknet.resconstruct.SolveException;
+import me.darknet.resconstruct.Solver;
 import me.darknet.resconstruct.instructions.InstructionSolver;
 import me.darknet.resconstruct.instructions.MethodInstructionSolver;
+import me.darknet.resconstruct.instructions.TypeInstructionSolver;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
 import org.objectweb.asm.tree.analysis.AnalyzerException;
 import org.objectweb.asm.tree.analysis.Frame;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class InstructionsSolver implements Solver, Opcodes {
 	public static final Map<Class<? extends AbstractInsnNode>, InstructionSolver<? extends AbstractInsnNode>> instructionSolvers = new HashMap<>();
@@ -19,6 +23,7 @@ public class InstructionsSolver implements Solver, Opcodes {
 
 	static {
 		instructionSolvers.put(MethodInsnNode.class, new MethodInstructionSolver());
+		instructionSolvers.put(TypeInsnNode.class, new TypeInstructionSolver());
 	}
 
 	public InstructionsSolver(Reconstruct reconstruct) {
@@ -29,7 +34,15 @@ public class InstructionsSolver implements Solver, Opcodes {
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	public void solve(ClassHierarchy classHierarchy, ClassNode classNode) {
 		for (MethodNode method : classNode.methods) {
-			SimAnalyzer analyzer = reconstruct.newAnalyzer();
+			// collect stackmap frames
+			NavigableMap<Integer, FrameNode> stackFrames = new TreeMap<>();
+			for (int i = 0; i < method.instructions.size(); i++) {
+				AbstractInsnNode instruction = method.instructions.get(i);
+				if (instruction instanceof FrameNode) {
+					stackFrames.put(i, (FrameNode) instruction);
+				}
+			}
+			SimAnalyzer analyzer = reconstruct.newAnalyzer(stackFrames);
 			try {
 				InsnList instructions = method.instructions;
 				SimFrame[] frames = analyzer.analyze(classNode.name, method);
