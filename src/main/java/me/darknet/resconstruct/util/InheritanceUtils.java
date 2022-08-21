@@ -37,13 +37,21 @@ public class InheritanceUtils {
 	}
 
 	static {
+		// Handle the standard classpath. This shouldn't fail.
 		try {
-			// Handle the standard classpath
 			GRAPH_CP.addClasspath();
-			// Handles the module path for Java 9+
-			GRAPH_CP.addModulePath();
 		} catch (IOException ex) {
 			throw new IllegalStateException("Failed to generate inheritance graph from classpath", ex);
+		}
+		// Handle adding the runtime.
+		// For Java 8 and below, this is "rt.jar".
+		// For Java 9+, this is the contents of the modules.
+		try {
+			// Attempt RT.jar, will throw IOException if the file is not found.
+			GRAPH_CP.addRtJar();
+		} catch (IOException ignored) {
+			// Likely on Java 9+, so try the module path instead.
+			GRAPH_CP.addModulePath();
 		}
 	}
 }
