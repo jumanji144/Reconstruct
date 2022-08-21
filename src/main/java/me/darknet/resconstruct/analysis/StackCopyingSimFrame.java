@@ -8,6 +8,7 @@ import me.coley.analysis.util.InsnUtil;
 import me.coley.analysis.util.TypeUtil;
 import me.coley.analysis.value.AbstractValue;
 import me.coley.analysis.value.VirtualValue;
+import me.darknet.resconstruct.util.TypeUtils;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -107,7 +108,7 @@ public class StackCopyingSimFrame extends SimFrame {
 					Type currentType = virtual.getType();
 					// Compute which type is the 'best' and use that.
 					// If it is the same as the current type, we do not need to do anything.
-					Type targetType = computeBestType(currentType, frameType, typeResolver);
+					Type targetType = TypeUtils.computeBestType(currentType, frameType, typeResolver);
 					if (targetType.equals(currentType))
 						return;
 					// Create a copy value but with the new type.
@@ -138,7 +139,7 @@ public class StackCopyingSimFrame extends SimFrame {
 				Type currentType = virtual.getType();
 				// Compute which type is the 'best' and use that.
 				// If it is the same as the current type, we do not need to do anything.
-				Type targetType = computeBestType(currentType, frameType, typeResolver);
+				Type targetType = TypeUtils.computeBestType(currentType, frameType, typeResolver);
 				if (targetType.equals(currentType))
 					return;
 				// Create a copy value but with the new type.
@@ -152,25 +153,6 @@ public class StackCopyingSimFrame extends SimFrame {
 				// SimAnalyzer's "analyze(...)" method.
 				lastInitted.setLocal(i, newValue);
 			}
-		}
-	}
-
-	private static Type computeBestType(Type currentType, Type frameType, TypeResolver typeResolver) {
-		Type commonType = (currentType.equals(frameType)) ? currentType :
-				typeResolver.common(currentType, frameType);
-		if (TypeUtil.OBJECT_TYPE.equals(commonType)) {
-			// One of the types involved is not known to SimAnalyzer.
-			// In this case we will trust the StackMapTable entry.
-			return frameType;
-		} else if (currentType.equals(commonType)) {
-			// The current type is the common type, no decision needed.
-			// Both are the same.
-			return frameType;
-		} else {
-			// The common type is NOT the current type.
-			// But it is also not "Object" so SimAnalyzer is aware of both involved types.
-			// The "currentType" is likely more specific than "frameType" so we will use it.
-			return currentType;
 		}
 	}
 }

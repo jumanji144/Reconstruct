@@ -3,12 +3,10 @@ package me.darknet.resconstruct.instructions;
 import me.coley.analysis.SimFrame;
 import me.coley.analysis.value.AbstractValue;
 import me.darknet.resconstruct.ClassHierarchy;
-import me.darknet.resconstruct.info.MethodMember;
 import me.darknet.resconstruct.PhantomClass;
 import me.darknet.resconstruct.util.TypeUtils;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.MethodInsnNode;
-import org.objectweb.asm.tree.analysis.Frame;
 
 public class MethodInstructionSolver implements InstructionSolver<MethodInsnNode> {
 

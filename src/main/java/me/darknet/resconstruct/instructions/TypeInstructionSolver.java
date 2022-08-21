@@ -6,7 +6,6 @@ import me.darknet.resconstruct.ClassHierarchy;
 import me.darknet.resconstruct.PhantomClass;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.TypeInsnNode;
-import org.objectweb.asm.tree.analysis.Frame;
 
 public class TypeInstructionSolver implements InstructionSolver<TypeInsnNode> {
 	@Override

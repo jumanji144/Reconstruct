@@ -24,6 +24,7 @@ public class Reconstruct {
 	private ClassHierarchy hierarchy;
 	private InheritanceGraph graph;
 	private boolean ignoreSolveExceptions;
+	private TypeResolver typeResolver;
 
 
 	/**
@@ -65,6 +66,23 @@ public class Reconstruct {
 		hierarchy = new ClassHierarchy();
 		graph = InheritanceUtils.getClasspathGraph().copy();
 		inputs.clear();
+		this.typeResolver = new TypeResolver() {
+			@Override
+			public Type common(Type type1, Type type2) {
+				String common = graph.getCommon(type1.getInternalName(), type2.getInternalName());
+				if (common != null)
+					return Type.getObjectType(common);
+				return TypeUtil.OBJECT_TYPE;
+			}
+
+			@Override
+			public Type commonException(Type type1, Type type2) {
+				String common = graph.getCommon(type1.getInternalName(), type2.getInternalName());
+				if (common != null)
+					return Type.getObjectType(common);
+				return TypeUtil.EXCEPTION_TYPE;
+			}
+		};
 	}
 
 	/**
@@ -113,23 +131,7 @@ public class Reconstruct {
 
 			@Override
 			public TypeResolver createTypeResolver() {
-				return new TypeResolver() {
-					@Override
-					public Type common(Type type1, Type type2) {
-						String common = graph.getCommon(type1.getInternalName(), type2.getInternalName());
-						if (common != null)
-							return Type.getObjectType(common);
-						return TypeUtil.OBJECT_TYPE;
-					}
-
-					@Override
-					public Type commonException(Type type1, Type type2) {
-						String common = graph.getCommon(type1.getInternalName(), type2.getInternalName());
-						if (common != null)
-							return Type.getObjectType(common);
-						return TypeUtil.EXCEPTION_TYPE;
-					}
-				};
+				return typeResolver;
 			}
 		};
 		analyzer.setThrowUnresolvedAnalyzerErrors(false);
@@ -155,5 +157,9 @@ public class Reconstruct {
 	 */
 	public Map<String, ClassReader> getInputs() {
 		return inputs;
+	}
+
+	public TypeResolver getTypeResolver() {
+		return typeResolver;
 	}
 }

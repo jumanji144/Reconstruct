@@ -2,12 +2,15 @@ package me.darknet.resconstruct.solvers;
 
 import me.coley.analysis.SimAnalyzer;
 import me.coley.analysis.SimFrame;
+import me.coley.analysis.TypeResolver;
 import me.darknet.resconstruct.ClassHierarchy;
 import me.darknet.resconstruct.Reconstruct;
 import me.darknet.resconstruct.SolveException;
 import me.darknet.resconstruct.Solver;
 import me.darknet.resconstruct.instructions.InstructionSolver;
 import me.darknet.resconstruct.instructions.MethodInstructionSolver;
+import me.darknet.resconstruct.instructions.TypeInstructionSolver;
+import me.darknet.resconstruct.instructions.VarInstructionSolver;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
 import org.objectweb.asm.tree.analysis.AnalyzerException;
@@ -18,16 +21,20 @@ import java.util.NavigableMap;
 import java.util.TreeMap;
 
 public class InstructionsSolver implements Solver, Opcodes {
-	public static final Map<Class<? extends AbstractInsnNode>, InstructionSolver<? extends AbstractInsnNode>> instructionSolvers = new HashMap<>();
+	public final Map<Class<? extends AbstractInsnNode>, InstructionSolver<? extends AbstractInsnNode>> instructionSolvers = new HashMap<>();
 	private final Reconstruct reconstruct;
-
-	static {
-		instructionSolvers.put(MethodInsnNode.class, new MethodInstructionSolver());
-	}
 
 	public InstructionsSolver(Reconstruct reconstruct) {
 		this.reconstruct = reconstruct;
+		initializeSolvers(reconstruct.getTypeResolver());
 	}
+	
+	public void initializeSolvers(TypeResolver resolver) {
+		instructionSolvers.put(MethodInsnNode.class, new MethodInstructionSolver());
+		instructionSolvers.put(TypeInsnNode.class, new TypeInstructionSolver());
+		instructionSolvers.put(VarInsnNode.class, new VarInstructionSolver(resolver));
+	}
+	
 
 	@Override
 	@SuppressWarnings({"rawtypes", "unchecked"})
