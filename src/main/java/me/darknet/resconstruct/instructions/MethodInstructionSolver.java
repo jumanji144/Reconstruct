@@ -1,5 +1,6 @@
 package me.darknet.resconstruct.instructions;
 
+import me.coley.analysis.SimFrame;
 import me.coley.analysis.value.AbstractValue;
 import me.darknet.resconstruct.ClassHierarchy;
 import me.darknet.resconstruct.info.MethodMember;
@@ -12,7 +13,7 @@ import org.objectweb.asm.tree.analysis.Frame;
 public class MethodInstructionSolver implements InstructionSolver<MethodInsnNode> {
 
 	@Override
-	public void solve(MethodInsnNode instruction, Frame<AbstractValue> frame, ClassHierarchy hierarchy) {
+	public void solve(MethodInsnNode instruction, SimFrame frame, ClassHierarchy hierarchy) {
 		// Infer argument types based on stack analysis
 		inferArgumentTypes(instruction, frame, hierarchy);
 		// Infer owner type based on stack analysis if there is method context on the stack
@@ -20,7 +21,7 @@ public class MethodInstructionSolver implements InstructionSolver<MethodInsnNode
 			inferOwnerType(instruction, frame, hierarchy);
 	}
 
-	private void inferArgumentTypes(MethodInsnNode instruction, Frame<AbstractValue> frame, ClassHierarchy hierarchy) {
+	private void inferArgumentTypes(MethodInsnNode instruction, SimFrame frame, ClassHierarchy hierarchy) {
 		int offset = 1;
 		Type methodType = Type.getMethodType(instruction.desc);
 		Type[] argTypes = methodType.getArgumentTypes();
@@ -39,7 +40,7 @@ public class MethodInstructionSolver implements InstructionSolver<MethodInsnNode
 		}
 	}
 
-	private void inferOwnerType(MethodInsnNode instruction, Frame<AbstractValue> frame, ClassHierarchy hierarchy) {
+	private void inferOwnerType(MethodInsnNode instruction, SimFrame frame, ClassHierarchy hierarchy) {
 		int offset = TypeUtils.getArgumentsSize(instruction.desc) + 1;
 		AbstractValue ownerValue = frame.getStack(frame.getStackSize() - offset);
 		Type ownerType = Type.getObjectType(instruction.owner);
