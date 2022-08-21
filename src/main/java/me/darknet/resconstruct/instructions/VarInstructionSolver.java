@@ -2,7 +2,6 @@ package me.darknet.resconstruct.instructions;
 
 import me.coley.analysis.SimFrame;
 import me.coley.analysis.TypeResolver;
-import me.coley.analysis.util.TypeUtil;
 import me.coley.analysis.value.AbstractValue;
 import me.darknet.resconstruct.ClassHierarchy;
 import me.darknet.resconstruct.PhantomClass;
@@ -35,8 +34,8 @@ public class VarInstructionSolver implements InstructionSolver<VarInsnNode> {
 		PhantomClass phantomActual = hierarchy.getOrCreate(stackType);
 		PhantomClass phantomLocal = hierarchy.getOrCreate(localType);
 		Type commonType = TypeUtils.computeBestType(localType, stackType, typeResolver);
-		if(commonType.equals(TypeUtil.OBJECT_TYPE) && !stackType.equals(TypeUtil.OBJECT_TYPE)) {
-			phantomLocal.addInheritor(commonType);
+		if (!commonType.equals(localType)) {
+			phantomActual.addImplementCandidate(phantomLocal);
 		}
 	}
 

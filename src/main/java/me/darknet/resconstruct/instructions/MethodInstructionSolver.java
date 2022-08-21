@@ -32,7 +32,7 @@ public class MethodInstructionSolver implements InstructionSolver<MethodInsnNode
 			if (!argType.equals(phantomStack.getType())) {
 				// If the stack type is not the same as the argument type that means that stack type inherits the argument type.
 				// Though at this point we do not know if this is directly or not.
-				phantomStack.addInheritor(argType);
+				phantomStack.addImplementCandidate(phantomActual);
 			}
 			offset += argType.getSize();
 		}
@@ -48,7 +48,7 @@ public class MethodInstructionSolver implements InstructionSolver<MethodInsnNode
 		if (!ownerType.equals(phantomStack.getType())) {
 			// If the stack type is not the same as the owner type that means that stack type inherits the owner type.
 			// Though at this point we do not know if this is directly or not.
-			phantomStack.addInheritor(ownerType);
+			phantomStack.addImplementCandidate(phantomActual);
 		}
 	}
 }

@@ -70,15 +70,15 @@ public class ClassHierarchy {
 			if (phantomClass.isCp() || inputPhantoms.contains(typeName))
 				return;
 			if (phantomClass.isInterface()) {
-				sb.append("Interface ");
+				sb.append("interface ");
 			} else {
-				sb.append("Class ");
+				sb.append("class ");
 			}
 			sb.append(typeName.replace('/', '.'));
 			if (!phantomClass.getSuperType().equals("java/lang/Object"))
 				sb.append(" extends ").append(phantomClass.getSuperType());
-			if (!phantomClass.getInheritors().isEmpty()) {
-				sb.append(" inherits ").append(phantomClass.getInheritors().stream()
+			if (!phantomClass.getImplementCandidates().isEmpty()) {
+				sb.append(" implements ").append(phantomClass.getImplementCandidates().stream()
 						.map(Type::getInternalName).collect(Collectors.joining(", ")));
 			}
 			sb.append(":\n");
