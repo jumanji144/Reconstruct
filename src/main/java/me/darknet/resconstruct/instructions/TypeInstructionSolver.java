@@ -11,16 +11,12 @@ public class TypeInstructionSolver implements InstructionSolver<TypeInsnNode> {
 	@Override
 	public void solve(TypeInsnNode instruction, SimFrame frame, ClassHierarchy hierarchy) {
 		if (instruction.getOpcode() == CHECKCAST) {
-			AbstractValue value = frame.getStack(0);
+			AbstractValue value = frame.getStack(frame.getStackSize() - 1);
 			// checkcast infers that the type is the same as the stack type (or inherits the stack type)
 			PhantomClass phantomStack = hierarchy.getOrCreate(Type.getObjectType(instruction.desc));
 			PhantomClass phantomValue = hierarchy.getOrCreate(value.getType());
 			if (!value.getType().equals(phantomStack.getType())) {
-				phantomStack.addImplementCandidate(phantomValue);
-				phantomValue.getChildCandidates().forEach(t -> {
-					PhantomClass childPhantom = hierarchy.getOrCreate(t);
-					childPhantom.addImplementCandidate(phantomStack);
-				});
+				phantomStack.addTypeHint(phantomValue);
 			}
 		}
 	}
