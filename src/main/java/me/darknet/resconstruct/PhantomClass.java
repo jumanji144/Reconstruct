@@ -16,10 +16,12 @@ public class PhantomClass {
 	private final Map<String, MethodMember> methods = new HashMap<>();
 	private final Map<String, FieldMember> fields = new HashMap<>();
 	private final Set<String> interfaces = new HashSet<>();
-	private final Set<Type> implementCandidates = new HashSet<>();
-	private final Set<Type> childCandidates = new HashSet<>();
+	private final Set<PhantomClass> implementCandidates = new HashSet<>();
+	private final Set<PhantomClass> childCandidates = new HashSet<>();
 	private final Type type;
 	private String superType = "java/lang/Object";
+	private int access = Opcodes.ACC_PUBLIC;
+	private boolean isObject;
 
 	/**
 	 * @param type
@@ -57,14 +59,8 @@ public class PhantomClass {
 	}
 
 	public byte[] generate(int version) {
-		int access = Opcodes.ACC_PUBLIC;
 		if (isAnnotation()) {
 			access |= Opcodes.ACC_ANNOTATION | Opcodes.ACC_ABSTRACT | Opcodes.ACC_INTERFACE;
-		} else if (isInterface()) {
-			access |= Opcodes.ACC_INTERFACE | Opcodes.ACC_ABSTRACT;
-			if (!"java/lang/Object".equals(superType)) {
-				throw new GenerateException("Class cannot be an interface and have super-type that is not Object!");
-			}
 		}
 
 		ClassWriter cw = new ClassWriter(0);
@@ -115,11 +111,11 @@ public class PhantomClass {
 		interfaces.add(itf);
 	}
 
-	public Set<Type> getImplementCandidates() {
+	public Set<PhantomClass> getImplementCandidates() {
 		return implementCandidates;
 	}
 
-	public Set<Type> getChildCandidates() {
+	public Set<PhantomClass> getChildCandidates() {
 		return childCandidates;
 	}
 
@@ -127,8 +123,17 @@ public class PhantomClass {
 		Type otherType = other.getType();
 		if (TypeUtil.OBJECT_TYPE.equals(otherType) || getType().equals(otherType))
 			return;
-		implementCandidates.add(otherType);
-		other.childCandidates.add(getType());
+		implementCandidates.add(other);
+		other.childCandidates.add(this);
+	}
+
+	public void addTypeHint(PhantomClass other) {
+		this.addImplementCandidate(other);
+		other.getChildCandidates().forEach(t -> t.addImplementCandidate(this));
+	}
+
+	public void addImplements(Type type) {
+		this.interfaces.add(type.getInternalName());
 	}
 
 	public Type getType() {
@@ -145,6 +150,22 @@ public class PhantomClass {
 
 	public void setSuperType(String superType) {
 		this.superType = superType;
+	}
+
+	public boolean isObject() {
+		return isObject;
+	}
+
+	public void setIsObject(boolean isObject) {
+		this.isObject = isObject;
+	}
+
+	public void setAccess(int access) {
+		this.access = access;
+	}
+
+	public int getAccess() {
+		return this.access;
 	}
 
 	public boolean isCp() {
