@@ -79,6 +79,7 @@ public class ClassHierarchy {
 				sb.append(" extends ").append(phantomClass.getSuperType());
 			if (!phantomClass.getImplementCandidates().isEmpty()) {
 				sb.append(" implements ").append(phantomClass.getImplementCandidates().stream()
+						.map(PhantomClass::getType)
 						.map(Type::getInternalName).collect(Collectors.joining(", ")));
 			}
 			sb.append(":\n");
@@ -88,5 +89,13 @@ public class ClassHierarchy {
 			});
 		});
 		return sb.toString();
+	}
+
+	public Map<String, PhantomClass> getPhantoms() {
+		return phantoms;
+	}
+
+	public Set<String> getInputPhantoms() {
+		return inputPhantoms;
 	}
 }
