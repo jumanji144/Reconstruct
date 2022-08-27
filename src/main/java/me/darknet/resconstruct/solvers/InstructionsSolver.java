@@ -7,10 +7,7 @@ import me.darknet.resconstruct.ClassHierarchy;
 import me.darknet.resconstruct.Reconstruct;
 import me.darknet.resconstruct.SolveException;
 import me.darknet.resconstruct.Solver;
-import me.darknet.resconstruct.instructions.InstructionSolver;
-import me.darknet.resconstruct.instructions.MethodInstructionSolver;
-import me.darknet.resconstruct.instructions.TypeInstructionSolver;
-import me.darknet.resconstruct.instructions.VarInstructionSolver;
+import me.darknet.resconstruct.instructions.*;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
 import org.objectweb.asm.tree.analysis.AnalyzerException;
@@ -33,6 +30,7 @@ public class InstructionsSolver implements Solver, Opcodes {
 		instructionSolvers.put(MethodInsnNode.class, new MethodInstructionSolver());
 		instructionSolvers.put(TypeInsnNode.class, new TypeInstructionSolver());
 		instructionSolvers.put(VarInsnNode.class, new VarInstructionSolver(resolver));
+		instructionSolvers.put(FieldInsnNode.class, new FieldInstructionSolver());
 	}
 	
 
