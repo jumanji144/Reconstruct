@@ -53,6 +53,7 @@ public class InstructionsSolver implements Solver, Opcodes {
 				for (int i = 0; i < instructions.size(); i++) {
 					AbstractInsnNode instruction = instructions.get(i);
 					SimFrame frame = frames[i];
+					if(frame == null) continue; // dead code
 					InstructionSolver solver = instructionSolvers.get(instruction.getClass());
 					if (solver != null) {
 						solver.solve(instruction, frame, classHierarchy);
