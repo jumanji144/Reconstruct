@@ -74,7 +74,7 @@ public class PhantomClass {
 			mv.visitLdcInsn("stub");
 			mv.visitMethodInsn(Opcodes.INVOKESPECIAL, "java/lang/RuntimeException", "<init>", "(Ljava/lang/String;)V", false);
 			mv.visitInsn(Opcodes.ATHROW);
-			mv.visitMaxs(1, AccessUtils.isStatic(method.access) ? 0 : 1);
+			mv.visitMaxs(2, AccessUtils.isStatic(method.access) ? 0 : 1);
 			mv.visitEnd();
 		}
 
