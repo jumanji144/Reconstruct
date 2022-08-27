@@ -1,4 +1,4 @@
-# Reconstruct
+# Reconstruct [![](https://jitpack.io/v/Nowilltolife/Reconstruct.svg)](https://jitpack.io/#Nowilltolife/Reconstruct)
 Resconstruct is a java library to infer missing information vectors of java classes.  
 
 ## Features
