@@ -3,6 +3,7 @@ package me.darknet.resconstruct.instructions;
 import me.coley.analysis.SimFrame;
 import me.coley.analysis.TypeResolver;
 import me.coley.analysis.value.AbstractValue;
+import me.coley.analysis.value.UninitializedValue;
 import me.darknet.resconstruct.ClassHierarchy;
 import me.darknet.resconstruct.PhantomClass;
 import me.darknet.resconstruct.util.TypeUtils;
@@ -29,6 +30,10 @@ public class VarInstructionSolver implements InstructionSolver<VarInsnNode> {
 		SimFrame next = frame.getFlowOutputs().iterator().next();
 		AbstractValue localValue = next.getLocal(insnNode.var);
 		AbstractValue stackValue = frame.getStack(frame.getStackSize() - 1);
+		if (localValue == UninitializedValue.UNINITIALIZED_VALUE) {
+			// Can't infer anything if local value is not initialized.
+			return;
+		}
 		Type stackType = stackValue.getType();
 		Type localType = localValue.getType();
 		PhantomClass phantomActual = hierarchy.getOrCreate(stackType);

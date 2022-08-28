@@ -25,6 +25,17 @@ public class TypeUtils {
 		return size;
 	}
 
+	/**
+	 * @param desc
+	 * 		Method descriptor.
+	 *
+	 * @return Number of arguments.
+	 */
+	public static int getArgumentsCount(String desc) {
+		Type methodType = Type.getMethodType(desc);
+		return methodType.getArgumentTypes().length;
+	}
+
 	public static Type computeBestType(Type currentType, Type frameType, TypeResolver typeResolver) {
 		Type commonType = (currentType.equals(frameType)) ? currentType :
 				typeResolver.common(currentType, frameType);
