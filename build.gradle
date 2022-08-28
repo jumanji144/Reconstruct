@@ -16,7 +16,7 @@ configurations {
 
 dependencies {
     def asm = '9.3'
-    def sim = '1.9.1'
+    def sim = '1.9.2'
     // objectweb asm
     compileOnly "org.ow2.asm:asm:${asm}"
     compileOnly "org.ow2.asm:asm-commons:${asm}"

@@ -127,8 +127,12 @@ public class StackCopyingSimFrame extends SimFrame {
 		// using the updated values.
 		super.execute(insn, interpreter);
 		// Update local variable information
+		int wideCount = 0;
 		for (int i = 0; i < frame.local.size(); i++) {
-			AbstractValue value = getLocal(i);
+			// The index in the "locals" of an ASM stack analysis frame must account for wide types.
+			// So we will adjust for it here. We do not need to do so for stack-frames since they
+			// do not account for wide types and their reserved slots.
+			AbstractValue value = getLocal(i + wideCount);
 			// We only care about object/virtual values
 			if (value instanceof VirtualValue) {
 				// Get the type in the stack-frame at the current index.
@@ -152,6 +156,8 @@ public class StackCopyingSimFrame extends SimFrame {
 				// Updating the last initialized frame updates the information that will be returned by the
 				// SimAnalyzer's "analyze(...)" method.
 				lastInitted.setLocal(i, newValue);
+			} else if (value.isWide()) {
+				wideCount++;
 			}
 		}
 	}
