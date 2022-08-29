@@ -18,6 +18,11 @@ public class MethodInstructionSolver implements InstructionSolver<MethodInsnNode
 		// Infer owner type based on stack analysis if there is method context on the stack
 		if (instruction.getOpcode() != INVOKESTATIC)
 			inferOwnerType(instruction, frame, hierarchy);
+		// determine if the owner is an object
+		if(!instruction.itf && instruction.getOpcode() != INVOKESTATIC) { // class must be an object because non itf call
+			PhantomClass phantomClass = hierarchy.getOrCreate(Type.getObjectType(instruction.owner));
+			if(!phantomClass.isObject()) phantomClass.setIsObject(true);
+		}
 	}
 
 	private void inferArgumentTypes(MethodInsnNode instruction, SimFrame frame, ClassHierarchy hierarchy) {

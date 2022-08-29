@@ -7,6 +7,7 @@ import me.coley.analysis.TypeResolver;
 import me.coley.analysis.util.InheritanceGraph;
 import me.coley.analysis.util.TypeUtil;
 import me.darknet.resconstruct.analysis.StackCopyingSimAnalyser;
+import me.darknet.resconstruct.solvers.InheritanceSolver;
 import me.darknet.resconstruct.solvers.InstructionsSolver;
 import me.darknet.resconstruct.util.InheritanceUtils;
 import org.objectweb.asm.ClassReader;
@@ -104,6 +105,9 @@ public class Reconstruct {
 					throw ex;
 			}
 		}
+		// Third pass sort inheritance and do interface solving
+		InheritanceSolver solver = new InheritanceSolver();
+		solver.solve(hierarchy, null);
 	}
 
 	/**

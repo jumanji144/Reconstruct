@@ -33,6 +33,11 @@ public class PhantomVisitor extends ClassVisitor {
 		return new PhantomAnnotationVisitor(Type.getType(descriptor), av);
 	}
 
+	@Override
+	public FieldVisitor visitField(int access, String name, String descriptor, String signature, Object value) {
+		return new PhantomFieldVisitor(super.visitField(access, name, descriptor, signature, value));
+	}
+
 	public class PhantomMethodVisitor extends MethodVisitor {
 		public PhantomMethodVisitor(MethodVisitor methodVisitor) {
 			super(PhantomVisitor.this.api, methodVisitor);
@@ -93,6 +98,25 @@ public class PhantomVisitor extends ClassVisitor {
 		@Override
 		public AnnotationVisitor visitLocalVariableAnnotation(int typeRef, TypePath typePath, Label[] start, Label[] end, int[] index, String descriptor, boolean visible) {
 			AnnotationVisitor av = super.visitLocalVariableAnnotation(typeRef, typePath, start, end, index, descriptor, visible);
+			return new PhantomAnnotationVisitor(Type.getType(descriptor), av);
+		}
+	}
+
+	public class PhantomFieldVisitor extends FieldVisitor {
+
+		public PhantomFieldVisitor(FieldVisitor fv) {
+			super(PhantomVisitor.this.api, fv);
+		}
+
+		@Override
+		public AnnotationVisitor visitAnnotation(String descriptor, boolean visible) {
+			AnnotationVisitor av = super.visitAnnotation(descriptor, visible);
+			return new PhantomAnnotationVisitor(Type.getType(descriptor), av);
+		}
+
+		@Override
+		public AnnotationVisitor visitTypeAnnotation(int typeRef, TypePath typePath, String descriptor, boolean visible) {
+			AnnotationVisitor av = super.visitTypeAnnotation(typeRef, typePath, descriptor, visible);
 			return new PhantomAnnotationVisitor(Type.getType(descriptor), av);
 		}
 	}

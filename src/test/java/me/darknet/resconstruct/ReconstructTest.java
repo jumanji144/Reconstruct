@@ -6,8 +6,10 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.tree.ClassNode;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiConsumer;
@@ -22,14 +24,14 @@ public class ReconstructTest {
 			// Should have generated: Cat, Person, Creature, Living, Named, World
 			assertEquals(6, builtNodes.size());
 			// No reason to suggest class, can use interface
-			//  - World isn't written as one, but from 'Application' alone that cannot be determined.
 			assertTrue(AccessUtils.isInterface(builtNodes.get("simulation/Living").access));
 			assertTrue(AccessUtils.isInterface(builtNodes.get("simulation/Named").access));
-			assertTrue(AccessUtils.isInterface(builtNodes.get("simulation/World").access));
 			// Constructors called, must be classes
 			assertFalse(AccessUtils.isInterface(builtNodes.get("simulation/Cat").access));
 			assertFalse(AccessUtils.isInterface(builtNodes.get("simulation/Person").access));
 			assertFalse(AccessUtils.isInterface(builtNodes.get("simulation/Creature").access));
+			// non-itf call shows that this is an object
+			assertFalse(AccessUtils.isInterface(builtNodes.get("simulation/World").access));
 			// TODO: assertions for model inheritance order
 		});
 	}
