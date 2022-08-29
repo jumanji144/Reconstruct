@@ -35,6 +35,8 @@ public class ClassHierarchy {
 	}
 
 	public PhantomClass getOrCreate(Type type) {
+		if (type == null)
+			throw new GenerateException("Tried to lookup phantom by type, but passed 'null'");
 		return phantoms.computeIfAbsent(type.getInternalName(), t -> {
 			boolean isCp = InheritanceUtils.isClasspathType(type);
 			return new PhantomClass(type) {

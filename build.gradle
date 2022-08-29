@@ -26,7 +26,7 @@ task sourcesJar(type: Jar) {
 
 dependencies {
     def asm = '9.3'
-    def sim = '1.9.1'
+    def sim = '1.9.2'
     // objectweb asm
     api "org.ow2.asm:asm:${asm}"
     api "org.ow2.asm:asm-commons:${asm}"
@@ -37,6 +37,12 @@ dependencies {
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.8.2"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.8.2"
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(8)
+    }
 }
 
 test {

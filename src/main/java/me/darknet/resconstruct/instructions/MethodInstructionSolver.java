@@ -2,6 +2,7 @@ package me.darknet.resconstruct.instructions;
 
 import me.coley.analysis.SimFrame;
 import me.coley.analysis.value.AbstractValue;
+import me.coley.analysis.value.UninitializedValue;
 import me.darknet.resconstruct.ClassHierarchy;
 import me.darknet.resconstruct.PhantomClass;
 import me.darknet.resconstruct.util.TypeUtils;
@@ -44,8 +45,13 @@ public class MethodInstructionSolver implements InstructionSolver<MethodInsnNode
 	}
 
 	private void inferOwnerType(MethodInsnNode instruction, SimFrame frame, ClassHierarchy hierarchy) {
-		int offset = TypeUtils.getArgumentsSize(instruction.desc) + 1;
+		// ASM's analysis framework does not handle 'wide' values, so we don't need to
+		// consider the width of values. Therefore, just count the number of arguments.
+		int offset = TypeUtils.getArgumentsCount(instruction.desc) + 1;
 		AbstractValue ownerValue = frame.getStack(frame.getStackSize() - offset);
+		if (ownerValue == UninitializedValue.UNINITIALIZED_VALUE) {
+			return;
+		}
 		Type ownerType = Type.getObjectType(instruction.owner);
 		Type stackType = ownerValue.getType();
 		PhantomClass phantomActual = hierarchy.getOrCreate(ownerType);
