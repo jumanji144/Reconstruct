@@ -8,6 +8,7 @@ import me.coley.analysis.util.InsnUtil;
 import me.coley.analysis.util.TypeUtil;
 import me.coley.analysis.value.AbstractValue;
 import me.coley.analysis.value.VirtualValue;
+import me.darknet.resconstruct.GenerateException;
 import me.darknet.resconstruct.util.TypeUtils;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -137,13 +138,60 @@ public class StackCopyingSimFrame extends SimFrame {
 			if (value instanceof VirtualValue) {
 				// Get the type in the stack-frame at the current index.
 				// The 'local' value should be the internal name of the type.
-				Type frameType = Type.getObjectType((String) frame.local.get(i));
+				Object frameLocal = frame.local.get(i);
+				Type frameLocalType;
+				if (frameLocal instanceof Integer) {
+					// Frame constants are not public, refer to ASM's frame class.
+					int valueKey = (Integer) frameLocal;
+					switch (valueKey) {
+						case 0: // ITEM_TOP
+							// TODO: Handle this case
+							throw new GenerateException("Unhandled frame value type: TOP(0)");
+						case 1: // ITEM_INTEGER
+							frameLocalType = Type.INT_TYPE;
+							break;
+						case 2: // ITEM_FLOAT
+							frameLocalType = Type.FLOAT_TYPE;
+							break;
+						case 3: // ITEM_DOUBLE
+							frameLocalType = Type.DOUBLE_TYPE;
+							break;
+						case 4: // ITEM_LONG
+							frameLocalType = Type.LONG_TYPE;
+							break;
+						case 5: // ITEM_NULL
+						case 7: // ITEM_OBJECT
+						case 8: // ITEM_UNINITIALIZED
+							frameLocalType = TypeUtil.OBJECT_TYPE;
+							break;
+						case 6: // ITEM_UNINITIALIZED_THIS
+							// TODO: Use declaring type of method instead
+							frameLocalType = TypeUtil.OBJECT_TYPE;
+							break;
+						case 9: // ITEM_ASM_BOOLEAN
+							frameLocalType = Type.BOOLEAN_TYPE;
+							break;
+						case 10: // ITEM_ASM_BYTE
+							frameLocalType = Type.BYTE_TYPE;
+							break;
+						case 11: // ITEM_ASM_CHAR
+							frameLocalType = Type.CHAR_TYPE;
+							break;
+						case 12: // ITEM_ASM_SHORT
+							frameLocalType = Type.SHORT_TYPE;
+							break;
+						default:
+							throw new GenerateException("Unknown frame type: " + valueKey);
+					}
+				} else {
+					frameLocalType = Type.getObjectType((String) frameLocal);
+				}
 				// Get the type value as recognized by SimAnalyzer for the local variable.
 				VirtualValue virtual = (VirtualValue) value;
 				Type currentType = virtual.getType();
 				// Compute which type is the 'best' and use that.
 				// If it is the same as the current type, we do not need to do anything.
-				Type targetType = TypeUtils.computeBestType(currentType, frameType, typeResolver);
+				Type targetType = TypeUtils.computeBestType(currentType, frameLocalType, typeResolver);
 				if (targetType.equals(currentType))
 					continue;
 				// Create a copy value but with the new type.
