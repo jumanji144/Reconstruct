@@ -6,10 +6,8 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.tree.ClassNode;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiConsumer;
@@ -46,6 +44,14 @@ public class ReconstructTest {
 			assertNotNull(builtNodes.get("D"), "Missing 'D' phantom");
 		});
 	}
+
+	@Test
+	public void testHandleWides() throws IOException {
+		test("/wide/Wide.classx", (reconstruct, builtNodes) -> {
+			// No assertions, just need to verify wide value handling does not crash
+		});
+	}
+
 
 	private void test(String path, BiConsumer<Reconstruct, Map<String, ClassNode>> test) {
 		try {

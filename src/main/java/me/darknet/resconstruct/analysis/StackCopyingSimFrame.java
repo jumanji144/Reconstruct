@@ -25,6 +25,7 @@ import java.util.NavigableMap;
  * Frame implementation that enriches local variable type analysis from {@code StackMapTable}.
  */
 public class StackCopyingSimFrame extends SimFrame {
+	private static final Type TOP_TYPE = Type.VOID_TYPE;
 	private final NavigableMap<Integer, FrameNode> stackFrames;
 	private StackCopyingSimFrame lastInitted;
 
@@ -134,58 +135,11 @@ public class StackCopyingSimFrame extends SimFrame {
 			// So we will adjust for it here. We do not need to do so for stack-frames since they
 			// do not account for wide types and their reserved slots.
 			AbstractValue value = getLocal(i + wideCount);
-			// We only care about object/virtual values
+			// Get the type in the stack-frame at the current index.
+			// The 'local' value should be the internal name of the type.
+			Type frameLocalType = getFrameLocalType(frame, i);
+			// We only care about object/virtual values for type solving
 			if (value instanceof VirtualValue) {
-				// Get the type in the stack-frame at the current index.
-				// The 'local' value should be the internal name of the type.
-				Object frameLocal = frame.local.get(i);
-				Type frameLocalType;
-				if (frameLocal instanceof Integer) {
-					// Frame constants are not public, refer to ASM's frame class.
-					int valueKey = (Integer) frameLocal;
-					switch (valueKey) {
-						case 0: // ITEM_TOP
-							// TODO: Handle this case
-							throw new GenerateException("Unhandled frame value type: TOP(0)");
-						case 1: // ITEM_INTEGER
-							frameLocalType = Type.INT_TYPE;
-							break;
-						case 2: // ITEM_FLOAT
-							frameLocalType = Type.FLOAT_TYPE;
-							break;
-						case 3: // ITEM_DOUBLE
-							frameLocalType = Type.DOUBLE_TYPE;
-							break;
-						case 4: // ITEM_LONG
-							frameLocalType = Type.LONG_TYPE;
-							break;
-						case 5: // ITEM_NULL
-						case 7: // ITEM_OBJECT
-						case 8: // ITEM_UNINITIALIZED
-							frameLocalType = TypeUtil.OBJECT_TYPE;
-							break;
-						case 6: // ITEM_UNINITIALIZED_THIS
-							// TODO: Use declaring type of method instead
-							frameLocalType = TypeUtil.OBJECT_TYPE;
-							break;
-						case 9: // ITEM_ASM_BOOLEAN
-							frameLocalType = Type.BOOLEAN_TYPE;
-							break;
-						case 10: // ITEM_ASM_BYTE
-							frameLocalType = Type.BYTE_TYPE;
-							break;
-						case 11: // ITEM_ASM_CHAR
-							frameLocalType = Type.CHAR_TYPE;
-							break;
-						case 12: // ITEM_ASM_SHORT
-							frameLocalType = Type.SHORT_TYPE;
-							break;
-						default:
-							throw new GenerateException("Unknown frame type: " + valueKey);
-					}
-				} else {
-					frameLocalType = Type.getObjectType((String) frameLocal);
-				}
 				// Get the type value as recognized by SimAnalyzer for the local variable.
 				VirtualValue virtual = (VirtualValue) value;
 				Type currentType = virtual.getType();
@@ -205,8 +159,73 @@ public class StackCopyingSimFrame extends SimFrame {
 				// SimAnalyzer's "analyze(...)" method.
 				lastInitted.setLocal(i, newValue);
 			} else if (value.isWide()) {
+				// Need to offset wide count differences between ASM stack analysis frame,
+				// and the StackMapTable frame.
 				wideCount++;
+				// If the StackMapTable's frame is 'top' then we don't need to offset.
+				// I don't understand why, but sometimes this data exists, sometimes it does not.
+				// The spec says:
+				//  >> Types of size 2 (long and double) are represented by two local variables (§2.6.1),
+				//  >> with the first local variable being the type itself and the second
+				//  >> local variable being top (§4.10.1.7).
+				// However, it is trivial to generate a class with a StackMapTable where in one frame
+				// this is satisfied, in another 'top' is missing, and in others there are multiple 'top' values
+				// in a row.
+				if (frameLocalType == TOP_TYPE)
+					wideCount--;
 			}
 		}
+	}
+
+	private static Type getFrameLocalType(FrameNode frame, int index) {
+		Object frameLocal = frame.local.get(index);
+		Type frameLocalType;
+		if (frameLocal instanceof Integer) {
+			// Frame constants are not public, refer to ASM's frame class.
+			int valueKey = (Integer) frameLocal;
+			switch (valueKey) {
+				case 0: // ITEM_TOP
+					frameLocalType = TOP_TYPE;
+					break;
+				case 1: // ITEM_INTEGER
+					frameLocalType = Type.INT_TYPE;
+					break;
+				case 2: // ITEM_FLOAT
+					frameLocalType = Type.FLOAT_TYPE;
+					break;
+				case 3: // ITEM_DOUBLE
+					frameLocalType = Type.DOUBLE_TYPE;
+					break;
+				case 4: // ITEM_LONG
+					frameLocalType = Type.LONG_TYPE;
+					break;
+				case 5: // ITEM_NULL
+				case 7: // ITEM_OBJECT
+				case 8: // ITEM_UNINITIALIZED
+					frameLocalType = TypeUtil.OBJECT_TYPE;
+					break;
+				case 6: // ITEM_UNINITIALIZED_THIS
+					// TODO: Use declaring type of method instead
+					frameLocalType = TypeUtil.OBJECT_TYPE;
+					break;
+				case 9: // ITEM_ASM_BOOLEAN
+					frameLocalType = Type.BOOLEAN_TYPE;
+					break;
+				case 10: // ITEM_ASM_BYTE
+					frameLocalType = Type.BYTE_TYPE;
+					break;
+				case 11: // ITEM_ASM_CHAR
+					frameLocalType = Type.CHAR_TYPE;
+					break;
+				case 12: // ITEM_ASM_SHORT
+					frameLocalType = Type.SHORT_TYPE;
+					break;
+				default:
+					throw new GenerateException("Unknown frame type: " + valueKey);
+			}
+		} else {
+			frameLocalType = Type.getObjectType((String) frameLocal);
+		}
+		return frameLocalType;
 	}
 }
