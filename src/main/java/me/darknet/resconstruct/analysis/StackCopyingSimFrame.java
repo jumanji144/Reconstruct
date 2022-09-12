@@ -131,6 +131,10 @@ public class StackCopyingSimFrame extends SimFrame {
 		// Update local variable information
 		int wideCount = 0;
 		for (int i = 0; i < frame.local.size(); i++) {
+			// Sanity check
+			if (wideCount < 0)
+				throw new AnalyzerException(frame, "Frame's StackMapTable yielded data causing estimated" +
+						" wide conversion offset to go negative");
 			// The index in the "locals" of an ASM stack analysis frame must account for wide types.
 			// So we will adjust for it here. We do not need to do so for stack-frames since they
 			// do not account for wide types and their reserved slots.
