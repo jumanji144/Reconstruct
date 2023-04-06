@@ -15,6 +15,7 @@ public class FieldInstructionSolver implements InstructionSolver<FieldInsnNode> 
 		if(opcode == PUTFIELD || opcode == PUTSTATIC) {
 			AbstractValue stackValue = frame.getStack(frame.getStackSize() - 1); // get stack value
 			PhantomClass owner = hierarchy.getOrCreate(Type.getObjectType(instruction.owner));
+			if(opcode == PUTFIELD) owner.setIsObject(true);
 			owner.addFieldUsage(opcode, instruction.name, stackValue.getType().getDescriptor());
 		}
 	}
