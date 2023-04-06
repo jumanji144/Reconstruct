@@ -83,7 +83,7 @@ public class ClassHierarchy {
 			if (!phantomClass.getSuperType().equals("java/lang/Object"))
 				sb.append(" extends ").append(phantomClass.getSuperType());
 			if (!phantomClass.getImplementCandidates().isEmpty()) {
-				sb.append(" implements ").append(phantomClass.getImplementCandidates().stream()
+				sb.append(" implements ").append(phantomClass.getImplements().stream()
 						.map(PhantomClass::getType)
 						.map(Type::getInternalName).collect(Collectors.joining(", ")));
 			}

@@ -19,9 +19,10 @@ public class PhantomClass {
 	private final Map<String, MethodMember> methods = new HashMap<>();
 	private final Map<String, FieldMember> fields = new HashMap<>();
 	private final Set<String> interfaces = new HashSet<>();
-	private final Set<PhantomClass> children = new HashSet<>();
 	private final Set<PhantomClass> implementCandidates = new HashSet<>();
 	private final Set<PhantomClass> childCandidates = new HashSet<>();
+	private final Set<PhantomClass> children = new HashSet<>();
+	private final Set<PhantomClass> implementedClasses = new HashSet<>();
 	private final Type type;
 	private String superType = "java/lang/Object";
 	private int access = Opcodes.ACC_PUBLIC;
@@ -111,6 +112,10 @@ public class PhantomClass {
 		return interfaces;
 	}
 
+	public Set<PhantomClass> getImplements() {
+		return implementedClasses;
+	}
+
 	public void addInterface(String itf) {
 		interfaces.add(itf);
 	}
@@ -140,8 +145,27 @@ public class PhantomClass {
 		other.getChildCandidates().forEach(t -> t.addImplementCandidate(this));
 	}
 
-	public void addImplements(Type type) {
-		this.interfaces.add(type.getInternalName());
+	public void addImplements(PhantomClass other) {
+		other.childCandidates.remove(this);
+		other.children.add(this);
+		this.interfaces.add(other.getTypeName());
+		this.implementedClasses.add(other);
+	}
+
+	public void removeImplements(Type type) {
+		this.interfaces.remove(type.getInternalName());
+		this.implementedClasses.removeIf(t -> t.getType().equals(type));
+	}
+
+	public boolean implementsInterface(Type type) {
+		// deep search
+		if (this.interfaces.contains(type.getInternalName()))
+			return true;
+		for (PhantomClass parent : implementedClasses) {
+			if (parent.implementsInterface(type))
+				return true;
+		}
+		return false;
 	}
 
 	public Type getType() {
