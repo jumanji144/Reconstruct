@@ -12,6 +12,9 @@ import org.objectweb.asm.Type;
 
 import java.util.*;
 
+/**
+ * A class representing a synthetically generated class based on the usage of the class inside other classes.
+ */
 public class PhantomClass {
 	private final Map<String, MethodMember> methods = new HashMap<>();
 	private final Map<String, FieldMember> fields = new HashMap<>();

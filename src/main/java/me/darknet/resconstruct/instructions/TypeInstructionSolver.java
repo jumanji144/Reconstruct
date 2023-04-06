@@ -16,6 +16,7 @@ public class TypeInstructionSolver implements InstructionSolver<TypeInsnNode> {
 			PhantomClass phantomStack = hierarchy.getOrCreate(Type.getObjectType(instruction.desc));
 			PhantomClass phantomValue = hierarchy.getOrCreate(value.getType());
 			if (!value.getType().equals(phantomStack.getType())) {
+				// adding a type hint will imply that phantomStack is a subclass of phantomValue
 				phantomStack.addTypeHint(phantomValue);
 			}
 		}

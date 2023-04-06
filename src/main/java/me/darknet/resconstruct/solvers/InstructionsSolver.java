@@ -6,7 +6,6 @@ import me.coley.analysis.TypeResolver;
 import me.darknet.resconstruct.ClassHierarchy;
 import me.darknet.resconstruct.Reconstruct;
 import me.darknet.resconstruct.SolveException;
-import me.darknet.resconstruct.Solver;
 import me.darknet.resconstruct.instructions.*;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
@@ -17,6 +16,9 @@ import java.util.Map;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
+/**
+ * Solver that solves inheritance patterns and class layout based on bytecode instructions.
+ */
 public class InstructionsSolver implements Solver, Opcodes {
 	public final Map<Class<? extends AbstractInsnNode>, InstructionSolver<? extends AbstractInsnNode>> instructionSolvers = new HashMap<>();
 	private final Reconstruct reconstruct;

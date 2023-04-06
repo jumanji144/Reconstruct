@@ -2,11 +2,13 @@ package me.darknet.resconstruct.solvers;
 
 import me.darknet.resconstruct.ClassHierarchy;
 import me.darknet.resconstruct.PhantomClass;
-import me.darknet.resconstruct.Solver;
 import me.darknet.resconstruct.util.PhantomUtil;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
 
+/**
+ * Solver that solves inheritance chains based on a given class hierarchy.
+ */
 public class InheritanceSolver implements Solver {
 	@Override
 	public void solve(ClassHierarchy classHierarchy, ClassNode classNode) {

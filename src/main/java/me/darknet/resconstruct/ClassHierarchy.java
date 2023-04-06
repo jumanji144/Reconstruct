@@ -11,6 +11,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * A phantom class container for holding all the phantom classes within a given realm.
+ */
 public class ClassHierarchy {
 	private final Map<String, PhantomClass> phantoms = new HashMap<>();
 	private final Set<String> inputPhantoms = new HashSet<>();
