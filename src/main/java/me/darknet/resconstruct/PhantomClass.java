@@ -16,6 +16,7 @@ public class PhantomClass {
 	private final Map<String, MethodMember> methods = new HashMap<>();
 	private final Map<String, FieldMember> fields = new HashMap<>();
 	private final Set<String> interfaces = new HashSet<>();
+	private final Set<PhantomClass> children = new HashSet<>();
 	private final Set<PhantomClass> implementCandidates = new HashSet<>();
 	private final Set<PhantomClass> childCandidates = new HashSet<>();
 	private final Type type;
@@ -88,7 +89,7 @@ public class PhantomClass {
 
 	public boolean isInterface() {
 		return isAnnotation() || methods.values().stream()
-				.anyMatch(MethodMember::isInterface);
+				.anyMatch(MethodMember::isInterface) || children.size() > 0;
 	}
 
 	public boolean isAnnotation() {
@@ -117,6 +118,10 @@ public class PhantomClass {
 
 	public Set<PhantomClass> getChildCandidates() {
 		return childCandidates;
+	}
+
+	public Set<PhantomClass> getChildren() {
+		return children;
 	}
 
 	public void addImplementCandidate(PhantomClass other) {

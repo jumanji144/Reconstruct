@@ -16,6 +16,7 @@ public class InheritanceSolver implements Solver {
 				value.setAccess(value.getAccess() | (Opcodes.ACC_INTERFACE | Opcodes.ACC_ABSTRACT));
 			}
 			for (PhantomClass implementCandidate : value.getImplementCandidates()) {
+				implementCandidate.getChildren().add(value);
 				value.addImplements(implementCandidate.getType());
 			}
 		}
