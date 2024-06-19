@@ -1,0 +1,35 @@
+plugins {
+    id 'java'
+    id 'maven-publish'
+}
+
+group = 'me.darknet'
+version = '0.0.1-alpha'
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+    maven {
+        url 'https://jitpack.io'
+    }
+}
+
+dependencies {
+    implementation 'org.jetbrains:annotations:22.0.0'
+
+    // blw
+    implementation 'com.github.jumanji144.Jasm:jasm-composition-jvm:0c46137fba'
+    implementation 'com.github.jumanji144:blw:master'
+    implementation 'org.ow2.asm:asm:9.2'
+
+    testImplementation platform('org.junit:junit-bom:5.9.1')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+test {
+    useJUnitPlatform()
+
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
