@@ -35,6 +35,21 @@ public class ReconstructTest {
                 Assertions.assertNotNull(named.getMethod("getName", "()Ljava/lang/String;"));
             });
         });
+        multiTest("simulation/Application.classx,simulation/Person.classx", hierarchy -> {
+            assertElement(hierarchy.primary(), "simulation/Named", named -> {
+                Assertions.assertNotNull(named.getMethod("getName", "()Ljava/lang/String;"));
+            });
+        });
+    }
+
+    @Test
+    public void testSimple() {
+        test("simple/A.classx", hierarchy -> {
+            return;
+        });
+        multiTest("simple/A.classx,simple/D.classx", hierarchy -> {
+            return;
+        });
     }
 
     private void test(String path, Consumer<ClassHierarchy> test) {
@@ -56,6 +71,34 @@ public class ReconstructTest {
             Assertions.fail(e);
         }
 
+    }
+
+    private void multiTest(String path, Consumer<ClassHierarchy> test) {
+        Map<String, byte[]> data = new HashMap<>();
+        String[] paths = path.split(",");
+        for (String p : paths) {
+            try (InputStream is = Objects.requireNonNull(
+                    ReconstructTest.class.getClassLoader().getResourceAsStream(p))) {
+                data.put(p.substring(0, p.lastIndexOf('.')), is.readAllBytes());
+            } catch (IOException e) {
+                Assertions.fail(e);
+            }
+        }
+
+        try {
+            ClassHierarchy hierarchy = ClassHierarchy.of(data, JAVA_BASE);
+
+            PhantomSolver solver = new PhantomSolver();
+            Result<ClassHierarchy> result = solver.solve(hierarchy);
+
+            result.ifOk(test)
+                    .ifErr(errors -> {
+                       errors.forEach(System.err::println);
+                       Assertions.fail();
+                    });
+        } catch (IOException e) {
+            Assertions.fail(e);
+        }
     }
 
 }
