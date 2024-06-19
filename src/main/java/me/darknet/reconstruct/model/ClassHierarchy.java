@@ -55,7 +55,7 @@ public class ClassHierarchy {
 
     public Map<String, byte[]> build() throws IOException {
         Map<String, byte[]> data = new HashMap<>();
-        for (Map.Entry<String, ClassBuilder<?, ?>> entry : classes.entrySet()) {
+        for (Map.Entry<String, ClassBuilder<?, ?>> entry : primary.entrySet()) {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             ClassFileView view = entry.getValue().build();
             library.write(view, out);

@@ -13,10 +13,7 @@ import me.darknet.assembler.compile.analysis.Value;
 import me.darknet.reconstruct.model.ClassHierarchy;
 import me.darknet.reconstruct.model.phantom.analysis.PhantomObjectValue;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class PhantomContainer {
 
@@ -79,11 +76,16 @@ public class PhantomContainer {
     }
 
     public ClassHierarchy build() {
-        Map<String, ClassBuilder<?, ?>> builders = new HashMap<>();
+        Map<String, ClassBuilder<?, ?>> primary = new HashMap<>();
+        Map<String, ClassBuilder<?, ?>> secondary = new HashMap<>();
         for (Map.Entry<String, PhantomClass> entry : classes.entrySet()) {
-            builders.put(entry.getKey(), entry.getValue().builder());
+            if (entry.getValue().concrete()) {
+                secondary.put(entry.getKey(), entry.getValue().builder());
+            } else {
+                primary.put(entry.getKey(), entry.getValue().builder());
+            }
         }
-        return new ClassHierarchy(builders);
+        return new ClassHierarchy(primary, secondary);
     }
 
     @Override
