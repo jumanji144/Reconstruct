@@ -40,6 +40,16 @@ public class PhantomClass implements PhantomUnit {
         return concrete;
     }
 
+    @Override
+    public int access() {
+        return builder.accessFlags();
+    }
+
+    @Override
+    public void access(int access) {
+        builder.accessFlags(access);
+    }
+
     public InstanceType type() {
         return builder.type();
     }

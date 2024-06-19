@@ -53,4 +53,16 @@ public interface PhantomUnit {
      * @return if this is a concrete unit
      */
     boolean concrete();
+
+    /**
+     * Get the access of this class
+     * @return the access of this class
+     */
+    int access();
+
+    /**
+     * Set the access of this class
+     * @param access the access of this class
+     */
+    void access(int access);
 }

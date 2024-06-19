@@ -73,4 +73,21 @@ public class MultiPhantomUnit implements PhantomUnit {
         }
         return true;
     }
+
+    @Override
+    public int access() {
+        // return access flags that all classes share
+        int access = 0xFFFFFFFF;
+        for (PhantomUnit phantom : classes) {
+            access &= phantom.access();
+        }
+        return access;
+    }
+
+    @Override
+    public void access(int access) {
+        for (PhantomUnit phantom : classes) {
+            phantom.access(access);
+        }
+    }
 }

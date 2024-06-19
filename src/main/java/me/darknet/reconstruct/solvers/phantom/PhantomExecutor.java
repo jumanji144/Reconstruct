@@ -6,11 +6,10 @@ import dev.xdark.blw.code.Instruction;
 import dev.xdark.blw.code.JavaOpcodes;
 import dev.xdark.blw.code.Label;
 import dev.xdark.blw.code.instruction.*;
+import dev.xdark.blw.constant.Constant;
+import dev.xdark.blw.constant.OfDynamic;
 import dev.xdark.blw.simulation.ExecutionEngine;
-import dev.xdark.blw.type.ClassType;
-import dev.xdark.blw.type.InstanceType;
-import dev.xdark.blw.type.MethodType;
-import dev.xdark.blw.type.ObjectType;
+import dev.xdark.blw.type.*;
 import me.darknet.assembler.compile.analysis.Value;
 import me.darknet.assembler.compile.analysis.frame.Frame;
 import me.darknet.assembler.compile.analysis.frame.TypedFrame;
@@ -51,9 +50,7 @@ public class PhantomExecutor implements ExecutionEngine {
     public void execute(ConstantInstruction<?> instruction) {}
 
     @Override
-    public void execute(VarInstruction instruction) {
-
-    }
+    public void execute(VarInstruction instruction) {}
 
     @Override
     public void execute(LookupSwitchInstruction instruction) {}
@@ -128,6 +125,10 @@ public class PhantomExecutor implements ExecutionEngine {
 
         boolean isStatic = instruction.opcode() == JavaOpcodes.INVOKESTATIC;
 
+        if (instruction.opcode() == JavaOpcodes.INVOKEINTERFACE) {
+            owner.access(owner.access() | AccessFlag.ACC_INTERFACE);
+        }
+
         inferArgumentTypes(owner, isStatic, instruction.type());
 
         if(!owner.concrete()) {
@@ -150,6 +151,9 @@ public class PhantomExecutor implements ExecutionEngine {
         }
 
         if(isStatic) return;
+        Value stack = currentFrame.pop();
+
+        if (!(stack instanceof Value.ObjectValue)) return;
 
         PhantomUnit stackOwnerClass = container.getOrCreateClass(currentFrame.pop());
         if (stackOwnerClass == owner) return;
@@ -158,7 +162,45 @@ public class PhantomExecutor implements ExecutionEngine {
     }
 
     @Override
-    public void execute(InvokeDynamicInstruction instruction) {}
+    public void execute(InvokeDynamicInstruction instruction) {
+        // indys have the same deduction as method instructions,
+        // except that if one of the constant arguments is a constant dynamic constant
+        // then there is a possibility we can extract some information from it, example:
+        // invokedynamic foo ()V { invokestatic, bar.baz, (LMHL;LString;LMethodType;LA;)LCallSite; }
+        // and then as arguments
+        // { { condy, LB; { bar.biz, (LMHL;LString;LMethodType;)LB; } } }
+
+        // since the result of the condy gets passed in as argument into the BSM then we can infer if both are objects
+        // here the condy will evaluate to a type of B and be passed into A, therefore B is a child of A
+
+        // first do normal deduction
+        if (instruction.type() instanceof MethodType mt) {
+            // we set it to true so skip the `this` deduction
+            inferArgumentTypes(null, true, mt);
+        }
+
+        // do the special deduction
+
+        MethodHandle bsm = instruction.bootstrapHandle();
+
+        // we assume we are dealing with T_INVOKESTATIC handle
+        MethodType bsmType = (MethodType) bsm.type();
+
+        // now we iterate through the constant arguments
+        for (int i = 0; i < instruction.args().size(); i++) {
+            if (instruction.args().get(i) instanceof OfDynamic dynamic) {
+                ConstantDynamic dynamicConstant = dynamic.value();
+                if (dynamicConstant.type() instanceof ObjectType objectType) {
+                    PhantomUnit unit = container.getOrCreateClass(objectType);
+                    PhantomUnit bsmParameter = container.getOrCreateClass(bsmType.parameterTypes().get(i));
+
+                    if (unit == bsmParameter) continue;
+
+                    unit.addTypeHint(bsmParameter);
+                }
+            }
+        }
+    }
 
     @Override
     public void execute(ImmediateJumpInstruction instruction) {}
