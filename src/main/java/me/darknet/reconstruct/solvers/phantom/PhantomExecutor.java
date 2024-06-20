@@ -161,6 +161,32 @@ public class PhantomExecutor implements ExecutionEngine {
         stackOwnerClass.addTypeHint(owner);
     }
 
+    private void inferDynamicArguments(MethodType mt, List<Constant> constants) {
+        // now we iterate through the constant arguments
+        for (int i = 0; i < constants.size(); i++) {
+            if (constants.get(i) instanceof OfDynamic dynamic) {
+                ConstantDynamic dynamicConstant = dynamic.value();
+                if (dynamicConstant.type() instanceof ObjectType objectType) {
+                    PhantomUnit unit = container.getOrCreateClass(objectType);
+                    PhantomUnit bsmParameter = container.getOrCreateClass(mt.parameterTypes().get(i));
+
+                    if (unit == bsmParameter) continue;
+
+                    unit.addTypeHint(bsmParameter);
+                }
+
+                // condys themselves can also have dynamic constants
+
+                // check if the bsm has a method type
+                MethodHandle bsm = dynamicConstant.methodHandle();
+
+                if (bsm.type() instanceof MethodType bsmType) {
+                    inferDynamicArguments(bsmType, dynamicConstant.args());
+                }
+            }
+        }
+    }
+
     @Override
     public void execute(InvokeDynamicInstruction instruction) {
         // indys have the same deduction as method instructions,
@@ -184,22 +210,7 @@ public class PhantomExecutor implements ExecutionEngine {
         MethodHandle bsm = instruction.bootstrapHandle();
 
         // we assume we are dealing with T_INVOKESTATIC handle
-        MethodType bsmType = (MethodType) bsm.type();
-
-        // now we iterate through the constant arguments
-        for (int i = 0; i < instruction.args().size(); i++) {
-            if (instruction.args().get(i) instanceof OfDynamic dynamic) {
-                ConstantDynamic dynamicConstant = dynamic.value();
-                if (dynamicConstant.type() instanceof ObjectType objectType) {
-                    PhantomUnit unit = container.getOrCreateClass(objectType);
-                    PhantomUnit bsmParameter = container.getOrCreateClass(bsmType.parameterTypes().get(i));
-
-                    if (unit == bsmParameter) continue;
-
-                    unit.addTypeHint(bsmParameter);
-                }
-            }
-        }
+        inferDynamicArguments((MethodType) bsm.type(), instruction.args());
     }
 
     @Override
